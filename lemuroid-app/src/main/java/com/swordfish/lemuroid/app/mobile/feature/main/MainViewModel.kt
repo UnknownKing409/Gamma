@@ -29,25 +29,25 @@ class MainViewModel(appContext: Context, private val saveSyncManager: SaveSyncMa
         val searchQuery: String = "",
     )
 
-    private val currentRouteFlow = MutableStateFlow(MainRoute.HOME)
     private val saveSyncEnabledFlow = MutableStateFlow(false)
     private val operationInProgressFlow = PendingOperationsMonitor(appContext).anyOperationInProgress()
     private val searchQueryFlow = MutableStateFlow("")
+    private val searchActiveFlow = MutableStateFlow(false)
 
     val state = buildStateFlow()
 
     private fun buildStateFlow(): StateFlow<UiState> {
         val combinedFlows =
             combine(
-                currentRouteFlow,
                 saveSyncEnabledFlow,
                 operationInProgressFlow,
                 searchQueryFlow,
-            ) { currentRoute, saveSyncEnabled, operationInProgress, searchQuery ->
+                searchActiveFlow,
+            ) { saveSyncEnabled, operationInProgress, searchQuery, searchActive ->
                 UiState(
                     operationInProgress = operationInProgress,
                     saveSyncEnabled = saveSyncEnabled,
-                    displaySearch = currentRoute == MainRoute.SEARCH,
+                    displaySearch = searchActive,
                     searchQuery = searchQuery,
                 )
             }
@@ -63,8 +63,13 @@ class MainViewModel(appContext: Context, private val saveSyncManager: SaveSyncMa
     fun changeRoute(currentRoute: MainRoute) {
         val current = saveSyncManager.isSupported() && saveSyncManager.isConfigured()
         saveSyncEnabledFlow.value = current
+    }
 
-        currentRouteFlow.value = currentRoute
+    fun setSearchActive(active: Boolean) {
+        searchActiveFlow.value = active
+        if (!active) {
+            searchQueryFlow.value = ""
+        }
     }
 
     fun changeQueryString(newSearchQuery: String) {

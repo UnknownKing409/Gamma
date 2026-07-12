@@ -13,9 +13,12 @@ import com.swordfish.lemuroid.app.shared.settings.StorageFrameworkPickerLauncher
 import com.swordfish.lemuroid.common.coroutines.combine
 import com.swordfish.lemuroid.lib.core.CoresSelection
 import com.swordfish.lemuroid.lib.library.CoreID
+import com.swordfish.lemuroid.lib.library.GameSystem
+import com.swordfish.lemuroid.lib.library.MetaSystemID
 import com.swordfish.lemuroid.lib.library.SystemID
 import com.swordfish.lemuroid.lib.library.db.RetrogradeDatabase
 import com.swordfish.lemuroid.lib.library.db.entity.Game
+import com.swordfish.lemuroid.lib.library.metaSystemID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -32,12 +35,11 @@ import kotlinx.coroutines.launch
 
 @OptIn(FlowPreview::class)
 class HomeViewModel(
-    appContext: Context,
+    private val appContext: Context,
     retrogradeDb: RetrogradeDatabase,
     private val coresSelection: CoresSelection,
 ) : ViewModel() {
     companion object {
-        const val CAROUSEL_MAX_ITEMS = 10
         const val DEBOUNCE_TIME = 100L
     }
 
@@ -51,10 +53,17 @@ class HomeViewModel(
         }
     }
 
+    /** A group of games rendered as a single section in the grouped grid. */
+    sealed interface Section {
+        val games: List<Game>
+
+        data class Favorites(override val games: List<Game>) : Section
+
+        data class System(val metaSystem: MetaSystemID, override val games: List<Game>) : Section
+    }
+
     data class UIState(
-        val favoritesGames: List<Game> = emptyList(),
-        val recentGames: List<Game> = emptyList(),
-        val discoveryGames: List<Game> = emptyList(),
+        val sections: List<Section> = emptyList(),
         val indexInProgress: Boolean = true,
         val showNoNotificationPermissionCard: Boolean = false,
         val showNoMicrophonePermissionCard: Boolean = false,
@@ -64,10 +73,15 @@ class HomeViewModel(
 
     private val microphonePermissionEnabledState = MutableStateFlow(true)
     private val notificationsPermissionEnabledState = MutableStateFlow(true)
+    private val searchQueryState = MutableStateFlow("")
     private val uiStates = MutableStateFlow(UIState())
 
     fun getViewStates(): Flow<UIState> {
         return uiStates
+    }
+
+    fun changeSearchQuery(query: String) {
+        searchQueryState.value = query
     }
 
     fun changeLocalStorageFolder(context: Context) {
@@ -104,35 +118,57 @@ class HomeViewModel(
     }
 
     private fun buildViewState(
-        favoritesGames: List<Game>,
-        recentGames: List<Game>,
-        discoveryGames: List<Game>,
+        allGames: List<Game>,
+        searchQuery: String,
         indexInProgress: Boolean,
         notificationsPermissionEnabled: Boolean,
         showMicrophoneCard: Boolean,
         showDesmumeWarning: Boolean,
     ): UIState {
-        val noGames = recentGames.isEmpty() && favoritesGames.isEmpty() && discoveryGames.isEmpty()
-
         return UIState(
-            favoritesGames = favoritesGames,
-            recentGames = recentGames,
-            discoveryGames = discoveryGames,
+            sections = buildSections(allGames, searchQuery),
             indexInProgress = indexInProgress,
             showNoNotificationPermissionCard = !notificationsPermissionEnabled,
             showNoMicrophonePermissionCard = showMicrophoneCard,
-            showNoGamesCard = noGames,
+            showNoGamesCard = allGames.isEmpty(),
             showDesmumeDeprecatedCard = showDesmumeWarning,
         )
+    }
+
+    private fun buildSections(
+        allGames: List<Game>,
+        searchQuery: String,
+    ): List<Section> {
+        val query = searchQuery.trim()
+        val filtered =
+            if (query.isEmpty()) {
+                allGames
+            } else {
+                allGames.filter { it.title.contains(query, ignoreCase = true) }
+            }
+
+        val sections = mutableListOf<Section>()
+
+        val favorites = filtered.filter { it.isFavorite }
+        if (favorites.isNotEmpty()) {
+            sections += Section.Favorites(favorites)
+        }
+
+        filtered
+            .groupBy { GameSystem.findById(it.systemId).metaSystemID() }
+            .map { (metaSystem, games) -> Section.System(metaSystem, games) }
+            .sortedBy { appContext.getString(it.metaSystem.titleResId) }
+            .forEach { sections += it }
+
+        return sections
     }
 
     init {
         viewModelScope.launch {
             val uiStatesFlow =
                 combine(
-                    favoritesGames(retrogradeDb),
-                    recentGames(retrogradeDb),
-                    discoveryGames(retrogradeDb),
+                    retrogradeDb.gameDao().selectAll(),
+                    searchQueryState,
                     indexingInProgress(appContext),
                     notificationsPermissionEnabledState,
                     microphoneNotification(retrogradeDb),
@@ -149,15 +185,6 @@ class HomeViewModel(
 
     private fun indexingInProgress(appContext: Context) =
         PendingOperationsMonitor(appContext).anyLibraryOperationInProgress()
-
-    private fun discoveryGames(retrogradeDb: RetrogradeDatabase) =
-        retrogradeDb.gameDao().selectFirstNotPlayed(CAROUSEL_MAX_ITEMS)
-
-    private fun recentGames(retrogradeDb: RetrogradeDatabase) =
-        retrogradeDb.gameDao().selectFirstUnfavoriteRecents(CAROUSEL_MAX_ITEMS)
-
-    private fun favoritesGames(retrogradeDb: RetrogradeDatabase) =
-        retrogradeDb.gameDao().selectFirstFavorites(CAROUSEL_MAX_ITEMS)
 
     private fun dsGamesCount(retrogradeDb: RetrogradeDatabase): Flow<Int> {
         return retrogradeDb.gameDao().selectSystemsWithCount()

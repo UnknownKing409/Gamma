@@ -42,6 +42,9 @@ interface GameDao {
     @Query("SELECT * FROM games WHERE isFavorite = 1 ORDER BY title ASC")
     fun selectFavorites(): PagingSource<Int, Game>
 
+    @Query("SELECT * FROM games ORDER BY title ASC, id DESC")
+    fun selectAll(): Flow<List<Game>>
+
     @Query(
         """
         SELECT * FROM games WHERE lastPlayedAt IS NOT NULL AND isFavorite = 0 ORDER BY lastPlayedAt DESC LIMIT :limit

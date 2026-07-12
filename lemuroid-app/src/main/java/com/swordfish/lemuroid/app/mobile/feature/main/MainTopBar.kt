@@ -53,6 +53,7 @@ fun MainTopBar(
     navController: NavHostController,
     onHelpPressed: () -> Unit,
     onUpdateQueryString: (String) -> Unit,
+    onSetSearchActive: (Boolean) -> Unit,
     mainUIState: MainViewModel.UiState,
 ) {
     Column {
@@ -62,6 +63,7 @@ fun MainTopBar(
             mainUIState = mainUIState,
             onHelpPressed = onHelpPressed,
             onUpdateQueryString = onUpdateQueryString,
+            onSetSearchActive = onSetSearchActive,
         )
 
         AnimatedVisibility(mainUIState.operationInProgress) {
@@ -78,13 +80,14 @@ fun LemuroidTopAppBar(
     mainUIState: MainViewModel.UiState,
     onHelpPressed: () -> Unit,
     onUpdateQueryString: (String) -> Unit,
+    onSetSearchActive: (Boolean) -> Unit,
 ) {
     val context = LocalContext.current
     val topBarColor = BottomAppBarDefaults.containerColor
 
     TopAppBar(
         title = {
-            if (route == MainRoute.SEARCH) {
+            if (mainUIState.displaySearch) {
                 LemuroidSearchView(
                     mainUIState = mainUIState,
                     onUpdateQueryString = onUpdateQueryString,
@@ -100,11 +103,19 @@ fun LemuroidTopAppBar(
             ),
         navigationIcon = {
             AnimatedVisibility(
-                visible = route.parent != null,
+                visible = mainUIState.displaySearch || route.parent != null,
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
-                IconButton(onClick = { navController.popBackStack() }) {
+                IconButton(
+                    onClick = {
+                        if (mainUIState.displaySearch) {
+                            onSetSearchActive(false)
+                        } else {
+                            navController.popBackStack()
+                        }
+                    },
+                ) {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         stringResource(id = R.string.back),
@@ -118,7 +129,9 @@ fun LemuroidTopAppBar(
                 navController = navController,
                 context = context,
                 saveSyncEnabled = mainUIState.saveSyncEnabled,
+                displaySearch = mainUIState.displaySearch,
                 onHelpPressed = onHelpPressed,
+                onSetSearchActive = onSetSearchActive,
                 operationsInProgress = mainUIState.operationInProgress,
             )
         },
@@ -131,9 +144,15 @@ fun LemuroidTopBarActions(
     navController: NavController,
     context: Context,
     saveSyncEnabled: Boolean,
+    displaySearch: Boolean,
     operationsInProgress: Boolean,
     onHelpPressed: () -> Unit,
+    onSetSearchActive: (Boolean) -> Unit,
 ) {
+    if (displaySearch) {
+        return
+    }
+
     Row {
         IconButton(
             onClick = { onHelpPressed() },
@@ -154,7 +173,15 @@ fun LemuroidTopBarActions(
                 )
             }
         }
-        if (route.showBottomNavigation) {
+        if (route.showTopLevelActions) {
+            IconButton(
+                onClick = { onSetSearchActive(true) },
+            ) {
+                Icon(
+                    Icons.Default.Search,
+                    stringResource(R.string.title_search),
+                )
+            }
             IconButton(
                 onClick = { navController.navigate(MainRoute.SETTINGS.route) },
             ) {

@@ -22,7 +22,6 @@ package com.swordfish.lemuroid.lib.library
 import androidx.annotation.StringRes
 import com.swordfish.lemuroid.lib.R
 import com.swordfish.lemuroid.lib.core.CoreVariable
-import java.util.Locale
 
 data class GameSystem(
     val id: SystemID,
@@ -1304,7 +1303,7 @@ data class GameSystem(
             val mutableMap = mutableMapOf<String, GameSystem>()
             for (system in SYSTEMS) {
                 for (extension in system.uniqueExtensions) {
-                    mutableMap[extension.toLowerCase(Locale.US)] = system
+                    mutableMap[extension.lowercase()] = system
                 }
             }
             mutableMap.toMap()
@@ -1323,7 +1322,7 @@ data class GameSystem(
         }
 
         fun findByUniqueFileExtension(fileExtension: String): GameSystem? =
-            byExtensionCache[fileExtension.toLowerCase(Locale.US)]
+            byExtensionCache[fileExtension.lowercase()]
 
         data class ScanOptions(
             val scanByFilename: Boolean = true,
