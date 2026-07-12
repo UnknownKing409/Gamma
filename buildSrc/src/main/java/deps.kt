@@ -4,13 +4,13 @@ object deps {
         const val targetSdkVersion  = 35
         const val compileSdkVersion = 35
         const val minSdkVersion     = 23
-        const val buildToolsVersion = "34.0.0"
+        const val buildToolsVersion = "36.0.0"
     }
 
     object versions {
-        const val dagger          = "2.19"
+        const val dagger          = "2.60.1"
         const val gms             = "17.0.0"
-        const val kotlin          = "2.0.21"
+        const val kotlin          = "2.2.10"
         const val okHttp          = "4.9.1"
         const val retrofit        = "2.9.0"
         const val work            = "2.9.0"
@@ -19,7 +19,8 @@ object deps {
         const val leanback        = "1.1.0-rc01"
         const val googleApiClient = "1.32.1"
         const val paging          = "3.2.1"
-        const val room            = "2.6.1"
+        const val room            = "2.8.4"
+        const val ksp             = "2.3.9"
         const val serialization   = "1.2.2"
         const val fragment        = "1.5.1"
         const val activity        = "1.7.2"

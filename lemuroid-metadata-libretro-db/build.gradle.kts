@@ -2,6 +2,7 @@ plugins {
     id("com.android.library")
     id("kotlin-android")
     id("kotlin-kapt")
+    id("com.google.devtools.ksp")
 }
 
 dependencies {
@@ -13,7 +14,7 @@ dependencies {
     implementation(deps.libs.dagger.core)
     implementation(deps.libs.kotlinxCoroutinesAndroid)
 
-    kapt(deps.libs.androidx.room.compiler)
+    ksp(deps.libs.androidx.room.compiler)
     kapt(deps.libs.dagger.compiler)
 }
 

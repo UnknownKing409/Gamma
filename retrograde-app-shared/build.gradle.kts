@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     id("com.android.library")
     id("kotlin-android")
-    id("kotlin-kapt")
+    id("com.google.devtools.ksp")
     id("kotlinx-serialization")
 }
 
@@ -44,17 +44,14 @@ dependencies {
     implementation(deps.libs.kotlinxCoroutinesAndroid)
     implementation(deps.libs.flowPreferences)
 
-    kapt(deps.libs.androidx.room.compiler)
+    ksp(deps.libs.androidx.room.compiler)
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 android {
-    defaultConfig {
-        javaCompileOptions {
-            annotationProcessorOptions {
-                argument("room.schemaLocation", "$projectDir/schemas")
-            }
-        }
-    }
     namespace = "com.swordfish.lemuroid.lib"
 }
 

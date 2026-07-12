@@ -8,6 +8,12 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+kapt {
+    // Room's generated code is now produced by KSP in a separate task, so Dagger (kapt) sees
+    // those types as error types within its own processing round. Let kapt defer them.
+    correctErrorTypes = true
+}
+
 android {
     defaultConfig {
         versionCode = 252
@@ -94,8 +100,9 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = true
+            isShrinkResources = true
             signingConfig = signingConfigs["release"]
-            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             resValue("string", "lemuroid_name", "Lemuroid")
         }
         getByName("debug") {

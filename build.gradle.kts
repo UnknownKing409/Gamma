@@ -22,6 +22,7 @@ plugins {
     id("androidx.baselineprofile") version "1.2.4" apply false
     id("com.android.application") version "8.4.0" apply false
     id("org.jetbrains.kotlin.plugin.compose") version deps.versions.kotlin apply false
+    id("com.google.devtools.ksp") version deps.versions.ksp apply false
 }
 
 allprojects {
