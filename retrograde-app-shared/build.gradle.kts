@@ -1,16 +1,10 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.library")
     id("kotlin-android")
     id("kotlin-kapt")
     id("kotlinx-serialization")
-}
-
-android {
-    kotlinOptions {
-        jvmTarget = "17"
-    }
 }
 
 dependencies {
@@ -62,8 +56,10 @@ android {
         }
     }
     namespace = "com.swordfish.lemuroid.lib"
-    kotlinOptions {
-        this as KotlinJvmOptions
-        jvmTarget = "17"
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.fromTarget("17")
     }
 }
