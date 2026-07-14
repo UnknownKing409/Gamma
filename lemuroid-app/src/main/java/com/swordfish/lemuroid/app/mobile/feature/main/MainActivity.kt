@@ -10,7 +10,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -25,7 +24,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.fredporciuncula.flow.preferences.FlowSharedPreferences
-import com.swordfish.lemuroid.R
 import com.swordfish.lemuroid.app.mobile.feature.home.HomeScreen
 import com.swordfish.lemuroid.app.mobile.feature.home.HomeViewModel
 import com.swordfish.lemuroid.app.mobile.feature.settings.advanced.AdvancedSettingsScreen
@@ -55,14 +53,12 @@ import com.swordfish.lemuroid.lib.android.RetrogradeComponentActivity
 import com.swordfish.lemuroid.lib.bios.BiosManager
 import com.swordfish.lemuroid.lib.core.CoresSelection
 import com.swordfish.lemuroid.lib.injection.PerActivity
-import com.swordfish.lemuroid.lib.library.SystemID
 import com.swordfish.lemuroid.lib.library.db.RetrogradeDatabase
 import com.swordfish.lemuroid.lib.library.db.entity.Game
 import com.swordfish.lemuroid.lib.preferences.SharedPreferencesHelper
 import com.swordfish.lemuroid.lib.savesync.SaveSyncManager
 import com.swordfish.lemuroid.lib.storage.DirectoriesManager
 import dagger.Provides
-import de.charlex.compose.material3.HtmlText
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import javax.inject.Inject
@@ -127,11 +123,6 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
                     ?.let { MainRoute.findByRoute(it) }
                     ?: MainRoute.HOME
 
-            val infoDialogDisplayed =
-                remember {
-                    mutableStateOf(false)
-                }
-
             LaunchedEffect(currentRoute) {
                 mainViewModel.changeRoute(currentRoute)
             }
@@ -153,10 +144,6 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
                 gameInteractor.onFavoriteToggle(game, isFavorite)
             }
 
-            val onHelpPressed = {
-                infoDialogDisplayed.value = true
-            }
-
             val mainUIState =
                 mainViewModel.state
                     .collectAsState(MainViewModel.UiState())
@@ -167,7 +154,6 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
                     MainTopBar(
                         currentRoute = currentRoute,
                         navController = navController,
-                        onHelpPressed = onHelpPressed,
                         mainUIState = mainUIState,
                         onUpdateQueryString = { mainViewModel.changeQueryString(it) },
                         onSetSearchActive = { mainViewModel.setSearchActive(it) },
@@ -292,24 +278,6 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
                 },
                 onCreateShortcut = { gameInteractor.onCreateShortcut(it) },
             )
-
-            if (infoDialogDisplayed.value) {
-                val message =
-                    remember {
-                        val systemFolders =
-                            SystemID.values()
-                                .joinToString(", ") { "<i>${it.dbname}</i>" }
-
-                        getString(R.string.lemuroid_help_content)
-                            .replace("\$SYSTEMS", systemFolders)
-                    }
-
-                AlertDialog(
-                    text = { HtmlText(text = message) },
-                    onDismissRequest = { infoDialogDisplayed.value = false },
-                    confirmButton = { },
-                )
-            }
         }
     }
 

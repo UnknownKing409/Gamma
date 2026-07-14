@@ -1,6 +1,5 @@
 package com.swordfish.lemuroid.app.mobile.feature.main
 
-import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -16,8 +15,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.CloudSync
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,20 +35,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.swordfish.lemuroid.R
-import com.swordfish.lemuroid.app.shared.savesync.SaveSyncWork
 
 @Composable
 fun MainTopBar(
     currentRoute: MainRoute,
     navController: NavHostController,
-    onHelpPressed: () -> Unit,
     onUpdateQueryString: (String) -> Unit,
     onSetSearchActive: (Boolean) -> Unit,
     mainUIState: MainViewModel.UiState,
@@ -61,7 +55,6 @@ fun MainTopBar(
             route = currentRoute,
             navController = navController,
             mainUIState = mainUIState,
-            onHelpPressed = onHelpPressed,
             onUpdateQueryString = onUpdateQueryString,
             onSetSearchActive = onSetSearchActive,
         )
@@ -78,11 +71,9 @@ fun LemuroidTopAppBar(
     route: MainRoute,
     navController: NavController,
     mainUIState: MainViewModel.UiState,
-    onHelpPressed: () -> Unit,
     onUpdateQueryString: (String) -> Unit,
     onSetSearchActive: (Boolean) -> Unit,
 ) {
-    val context = LocalContext.current
     val topBarColor = BottomAppBarDefaults.containerColor
 
     TopAppBar(
@@ -127,12 +118,8 @@ fun LemuroidTopAppBar(
             LemuroidTopBarActions(
                 route = route,
                 navController = navController,
-                context = context,
-                saveSyncEnabled = mainUIState.saveSyncEnabled,
                 displaySearch = mainUIState.displaySearch,
-                onHelpPressed = onHelpPressed,
                 onSetSearchActive = onSetSearchActive,
-                operationsInProgress = mainUIState.operationInProgress,
             )
         },
     )
@@ -142,54 +129,29 @@ fun LemuroidTopAppBar(
 fun LemuroidTopBarActions(
     route: MainRoute,
     navController: NavController,
-    context: Context,
-    saveSyncEnabled: Boolean,
     displaySearch: Boolean,
-    operationsInProgress: Boolean,
-    onHelpPressed: () -> Unit,
     onSetSearchActive: (Boolean) -> Unit,
 ) {
-    if (displaySearch) {
+    if (displaySearch || !route.showTopLevelActions) {
         return
     }
 
     Row {
         IconButton(
-            onClick = { onHelpPressed() },
+            onClick = { onSetSearchActive(true) },
         ) {
             Icon(
-                Icons.Outlined.Info,
-                stringResource(R.string.mobile_settings_help),
+                Icons.Default.Search,
+                stringResource(R.string.title_search),
             )
         }
-        if (saveSyncEnabled) {
-            IconButton(
-                onClick = { SaveSyncWork.enqueueManualWork(context.applicationContext) },
-                enabled = !operationsInProgress,
-            ) {
-                Icon(
-                    Icons.Outlined.CloudSync,
-                    stringResource(R.string.save_sync),
-                )
-            }
-        }
-        if (route.showTopLevelActions) {
-            IconButton(
-                onClick = { onSetSearchActive(true) },
-            ) {
-                Icon(
-                    Icons.Default.Search,
-                    stringResource(R.string.title_search),
-                )
-            }
-            IconButton(
-                onClick = { navController.navigate(MainRoute.SETTINGS.route) },
-            ) {
-                Icon(
-                    Icons.Outlined.Settings,
-                    stringResource(R.string.settings),
-                )
-            }
+        IconButton(
+            onClick = { navController.navigate(MainRoute.SETTINGS.route) },
+        ) {
+            Icon(
+                Icons.Outlined.Settings,
+                stringResource(R.string.settings),
+            )
         }
     }
 }
