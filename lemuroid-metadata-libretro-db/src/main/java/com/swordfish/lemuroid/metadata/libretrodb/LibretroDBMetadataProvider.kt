@@ -10,6 +10,7 @@ import com.swordfish.lemuroid.metadata.libretrodb.db.LibretroDBManager
 import com.swordfish.lemuroid.metadata.libretrodb.db.LibretroDatabase
 import com.swordfish.lemuroid.metadata.libretrodb.db.entity.LibretroRom
 import timber.log.Timber
+import java.util.Locale
 
 class LibretroDBMetadataProvider(private val ovgdbManager: LibretroDBManager) :
     GameMetadataProvider {
@@ -100,7 +101,7 @@ class LibretroDBMetadataProvider(private val ovgdbManager: LibretroDBManager) :
         parent: String?,
         dbname: String,
     ): Boolean {
-        return parent?.lowercase()?.contains(dbname) == true
+        return parent?.lowercase(Locale.getDefault())?.contains(dbname) == true
     }
 
     private suspend fun findByCRC(
