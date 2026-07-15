@@ -126,9 +126,9 @@ private sealed interface GridEntry {
         override val key = "header_$sectionId"
     }
 
-    data class GameCell(val game: Game) : GridEntry {
+    data class GameCell(val sectionId: String, val game: Game) : GridEntry {
         override val isFullSpan = false
-        override val key = "game_${game.id}"
+        override val key = "game_${sectionId}_${game.id}"
     }
 }
 
@@ -176,25 +176,28 @@ private fun HomeScreen(
             val railSections = mutableListOf<RailSection>()
             state.sections.forEach { section ->
                 val headerIndex = entries.size
-                when (section) {
-                    is HomeViewModel.Section.Favorites -> {
-                        val title = context.getString(R.string.favorites)
-                        entries += GridEntry.Header("favorites", null, title, section.games.size)
-                        railSections += RailSection(headerIndex, title, null)
+                val sectionId =
+                    when (section) {
+                        is HomeViewModel.Section.Favorites -> {
+                            val title = context.getString(R.string.favorites)
+                            entries += GridEntry.Header("favorites", null, title, section.games.size)
+                            railSections += RailSection(headerIndex, title, null)
+                            "favorites"
+                        }
+                        is HomeViewModel.Section.System -> {
+                            val title = context.getString(section.metaSystem.titleResId)
+                            entries +=
+                                GridEntry.Header(
+                                    section.metaSystem.name,
+                                    section.metaSystem.imageResId,
+                                    title,
+                                    section.games.size,
+                                )
+                            railSections += RailSection(headerIndex, title, section.metaSystem.imageResId)
+                            section.metaSystem.name
+                        }
                     }
-                    is HomeViewModel.Section.System -> {
-                        val title = context.getString(section.metaSystem.titleResId)
-                        entries +=
-                            GridEntry.Header(
-                                section.metaSystem.name,
-                                section.metaSystem.imageResId,
-                                title,
-                                section.games.size,
-                            )
-                        railSections += RailSection(headerIndex, title, section.metaSystem.imageResId)
-                    }
-                }
-                section.games.forEach { entries += GridEntry.GameCell(it) }
+                section.games.forEach { entries += GridEntry.GameCell(sectionId, it) }
             }
 
             entries to railSections
