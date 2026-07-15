@@ -1,17 +1,11 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    id("kotlin-kapt")
+    id("com.google.devtools.ksp")
     id("androidx.navigation.safeargs.kotlin")
     id("kotlinx-serialization")
     id("androidx.baselineprofile")
     id("org.jetbrains.kotlin.plugin.compose")
-}
-
-kapt {
-    // Room's generated code is now produced by KSP in a separate task, so Dagger (kapt) sees
-    // those types as error types within its own processing round. Let kapt defer them.
-    correctErrorTypes = true
 }
 
 android {
@@ -162,8 +156,6 @@ dependencies {
     implementation(deps.libs.androidx.lifecycle.commonJava8)
     implementation(deps.libs.androidx.lifecycle.reactiveStreams)
 
-    kapt(deps.libs.androidx.lifecycle.processor)
-
     implementation(deps.libs.androidx.leanback.leanback)
     implementation(deps.libs.androidx.leanback.leanbackPreference)
     implementation(deps.libs.androidx.leanback.leanbackPaging)
@@ -213,8 +205,8 @@ dependencies {
     // Uncomment this when using a local aar file.
     // implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
 
-    kapt(deps.libs.dagger.android.processor)
-    kapt(deps.libs.dagger.compiler)
+    ksp(deps.libs.dagger.android.processor)
+    ksp(deps.libs.dagger.compiler)
 }
 
 fun usePlayDynamicFeatures(): Boolean {
