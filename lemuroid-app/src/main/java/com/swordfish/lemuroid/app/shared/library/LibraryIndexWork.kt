@@ -7,10 +7,10 @@ import androidx.work.WorkerParameters
 import com.swordfish.lemuroid.app.mobile.shared.NotificationsManager
 import com.swordfish.lemuroid.app.utils.android.createSyncForegroundInfo
 import com.swordfish.lemuroid.lib.injection.AndroidWorkerInjection
-import com.swordfish.lemuroid.lib.injection.WorkerKey
 import com.swordfish.lemuroid.lib.library.LemuroidLibrary
 import dagger.Binds
 import dagger.android.AndroidInjector
+import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -55,8 +55,8 @@ class LibraryIndexWork(context: Context, workerParams: WorkerParameters) :
     abstract class Module {
         @Binds
         @IntoMap
-        @WorkerKey(LibraryIndexWork::class)
-        abstract fun bindMyWorkerFactory(builder: Subcomponent.Builder): AndroidInjector.Factory<out ListenableWorker>
+        @ClassKey(LibraryIndexWork::class)
+        abstract fun bindMyWorkerFactory(builder: Subcomponent.Builder): AndroidInjector.Factory<*>
     }
 
     @dagger.Subcomponent
