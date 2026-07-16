@@ -114,12 +114,11 @@ enum class CoreID(
     ;
 
     companion object {
-        fun getAssetManager(coreID: CoreID): AssetsManager {
-            return when (coreID) {
+        fun getAssetManager(coreID: CoreID): AssetsManager =
+            when (coreID) {
                 PPSSPP -> PPSSPPAssetsManager()
                 else -> NoAssetsManager()
             }
-        }
     }
 
     interface AssetsManager {

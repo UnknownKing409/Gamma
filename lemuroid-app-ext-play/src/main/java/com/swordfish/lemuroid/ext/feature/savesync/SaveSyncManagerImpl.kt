@@ -105,9 +105,11 @@ class SaveSyncManagerImpl(
 
     private fun getSizeHumanReadable(directory: File): String {
         val size =
-            directory.walkBottomUp()
+            directory
+                .walkBottomUp()
                 .fold(0L) { acc, file -> acc + file.length() }
-        return android.text.format.Formatter.formatShortFileSize(appContext, size)
+        return android.text.format.Formatter
+            .formatShortFileSize(appContext, size)
     }
 
     private fun syncLocalAndRemoteFolder(
@@ -182,9 +184,13 @@ class SaveSyncManagerImpl(
         Timber.i("Local file updated $localFile")
 
         val mediaContent = FileContent("application/x-binary", localFile)
-        val metadata = com.google.api.services.drive.model.File()
+        val metadata =
+            com.google.api.services.drive.model
+                .File()
         metadata.modifiedTime = DateTime(localFile.lastModified())
-        drive.files().update(remoteFile.id, metadata, mediaContent)
+        drive
+            .files()
+            .update(remoteFile.id, metadata, mediaContent)
             .execute()
     }
 
@@ -196,7 +202,9 @@ class SaveSyncManagerImpl(
     ) {
         Timber.i("Local-only file detected $localFile")
 
-        val metadata = com.google.api.services.drive.model.File()
+        val metadata =
+            com.google.api.services.drive.model
+                .File()
         metadata.parents = listOf(remoteParentFolderId)
         metadata.name = localFile.name
         metadata.appProperties =
@@ -208,7 +216,9 @@ class SaveSyncManagerImpl(
             )
         metadata.modifiedTime = DateTime(localFile.lastModified())
         val mediaContent = FileContent("application/x-binary", localFile)
-        drive.files().create(metadata, mediaContent)
+        drive
+            .files()
+            .create(metadata, mediaContent)
             .setFields("id")
             .execute()
     }
@@ -245,7 +255,8 @@ class SaveSyncManagerImpl(
     ) {
         if (remoteFile.size == 0) return
         Timber.i("Downloading file to $localFile")
-        drive.files()
+        drive
+            .files()
             .get(remoteFile.id)
             .executeMediaAndDownloadTo(localFile.outputStream())
         localFile.setLastModified(remoteFile.modifiedTime.value)
@@ -253,20 +264,18 @@ class SaveSyncManagerImpl(
 
     private fun buildRemoteFileMap(
         remoteFiles: Sequence<com.google.api.services.drive.model.File>,
-    ): Map<String, com.google.api.services.drive.model.File> {
-        return remoteFiles
+    ): Map<String, com.google.api.services.drive.model.File> =
+        remoteFiles
             .filter { it.appProperties?.get(GDRIVE_PROPERTY_LOCAL_PATH) != null }
             .map { it.appProperties?.get(GDRIVE_PROPERTY_LOCAL_PATH)!! to it }
             .toMap()
-    }
 
-    private fun buildLocalFileMap(folder: File): Map<String, File> {
-        return folder
+    private fun buildLocalFileMap(folder: File): Map<String, File> =
+        folder
             .walkBottomUp()
             .filter { it.exists() && !it.isDirectory && it.length() > 0 }
             .map { it.toRelativeString(folder) to it }
             .toMap()
-    }
 
     private fun getOrCreateAppDataFolder(folderName: String): String {
         val drive =
@@ -274,7 +283,9 @@ class SaveSyncManagerImpl(
                 ?: throw UnsupportedOperationException()
 
         val query =
-            drive.files().list()
+            drive
+                .files()
+                .list()
                 .setSpaces("appDataFolder")
                 .setQ("name = '$folderName' and mimeType = 'application/vnd.google-apps.folder'")
                 .setFields("files(id)")
@@ -284,13 +295,17 @@ class SaveSyncManagerImpl(
             return query.files[0].id
         }
 
-        val metadata = com.google.api.services.drive.model.File()
+        val metadata =
+            com.google.api.services.drive.model
+                .File()
         metadata.parents = listOf("appDataFolder")
         metadata.name = folderName
         metadata.mimeType = "application/vnd.google-apps.folder"
 
         val file =
-            drive.files().create(metadata)
+            drive
+                .files()
+                .create(metadata)
                 .setFields("id")
                 .execute()
 
@@ -312,7 +327,9 @@ class SaveSyncManagerImpl(
                         "files(id, name, size, appProperties, modifiedTime, parents, md5Checksum)"
 
                 val result =
-                    drive.files().list()
+                    drive
+                        .files()
+                        .list()
                         .setPageSize(500)
                         .setSpaces("appDataFolder")
                         .setQ(query)

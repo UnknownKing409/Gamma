@@ -11,8 +11,7 @@ import gg.padkit.controls.ControlButton
 import gg.padkit.ids.Id
 import gg.padkit.layouts.radial.secondarydials.LayoutRadialSecondaryDialsScope
 
-context(PadKitScope, LayoutRadialSecondaryDialsScope)
-@Composable
+context(PadKitScope, LayoutRadialSecondaryDialsScope) @Composable
 fun LemuroidControlButton(
     modifier: Modifier = Modifier,
     id: Id.Key,

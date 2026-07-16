@@ -12,7 +12,8 @@ class CoresSelectionPreferences {
     fun addCoresSelectionPreferences(preferenceScreen: PreferenceScreen) {
         val context = preferenceScreen.context
 
-        GameSystem.all()
+        GameSystem
+            .all()
             .filter { it.systemCoreConfigs.size > 1 }
             .forEach {
                 preferenceScreen.addPreference(createPreference(context, it))

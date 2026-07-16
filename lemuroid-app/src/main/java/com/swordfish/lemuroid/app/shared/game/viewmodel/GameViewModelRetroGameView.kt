@@ -59,7 +59,9 @@ class GameViewModelRetroGameView(
     sealed interface GameState {
         data object Uninitialized : GameState
 
-        data class Loading(val message: String) : GameState
+        data class Loading(
+            val message: String,
+        ) : GameState
 
         data class Loaded(
             val gameData: GameLoader.GameData,
@@ -74,9 +76,7 @@ class GameViewModelRetroGameView(
     private val retroGameViewFlow = MutableStateFlow<GLRetroView?>(null)
     var retroGameView: GLRetroView? by MutableStateProperty(retroGameViewFlow)
 
-    fun getGameState(): Flow<GameState> {
-        return gameState.debounce(200)
-    }
+    fun getGameState(): Flow<GameState> = gameState.debounce(200)
 
     suspend fun initialize(
         applicationContext: Context,
@@ -124,8 +124,7 @@ class GameViewModelRetroGameView(
                         ""
                     }
                 sideEffects.requestFailureFinish(message)
-            }
-            .debounce(200)
+            }.debounce(200)
             .collect { loadingState ->
                 gameState.value =
                     if (loadingState is GameLoader.LoadingState.Ready) {
@@ -196,7 +195,8 @@ class GameViewModelRetroGameView(
 
     suspend inline fun <reified T> waitGLEvent() {
         val retroView = retroGameViewFlow()
-        retroView.getGLRetroEvents()
+        retroView
+            .getGLRetroEvents()
             .filterIsInstance<T>()
             .first()
     }
@@ -212,8 +212,8 @@ class GameViewModelRetroGameView(
         requestRumble: Boolean,
         requestMicrophone: Boolean,
         enableImmersiveMode: Boolean,
-    ): GLRetroViewData {
-        return GLRetroViewData(appContext).apply {
+    ): GLRetroViewData =
+        GLRetroViewData(appContext).apply {
             coreFilePath = gameData.coreLibrary
 
             when (val gameFiles = gameData.gameFiles) {
@@ -244,18 +244,16 @@ class GameViewModelRetroGameView(
             enableMicrophone = requestMicrophone
             immersiveMode = buildImmersiveModeConfiguration(enableImmersiveMode)
         }
-    }
 
-    private fun buildImmersiveModeConfiguration(enableImmersiveMode: Boolean): ImmersiveMode? {
-        return if (enableImmersiveMode) {
+    private fun buildImmersiveModeConfiguration(enableImmersiveMode: Boolean): ImmersiveMode? =
+        if (enableImmersiveMode) {
             ImmersiveMode(blendFactor = 0.05f)
         } else {
             null
         }
-    }
 
-    private fun getLoadingMessage(loadingState: GameLoader.LoadingState): String {
-        return when (loadingState) {
+    private fun getLoadingMessage(loadingState: GameLoader.LoadingState): String =
+        when (loadingState) {
             is GameLoader.LoadingState.LoadingCore -> {
                 appContext.getString(com.swordfish.lemuroid.ext.R.string.game_loading_download_core)
             }
@@ -266,7 +264,6 @@ class GameViewModelRetroGameView(
 
             else -> ""
         }
-    }
 
     private fun printRetroVariables(retroGameView: GLRetroView) {
         scope.launch {
@@ -311,14 +308,16 @@ class GameViewModelRetroGameView(
     }
 
     private suspend fun initializeRetroGameViewErrorsFlow() {
-        retroGameViewFlow().getGLRetroErrors()
+        retroGameViewFlow()
+            .getGLRetroErrors()
             .catch { Timber.e(it, "Exception in GLRetroErrors. Ironic.") }
             .collect { handleRetroViewError(it) }
     }
 
     private fun updateCoreVariables(options: List<CoreVariable>) {
         val updatedVariables =
-            options.map { Variable(it.key, it.value) }
+            options
+                .map { Variable(it.key, it.value) }
                 .toTypedArray()
 
         updatedVariables.forEach {

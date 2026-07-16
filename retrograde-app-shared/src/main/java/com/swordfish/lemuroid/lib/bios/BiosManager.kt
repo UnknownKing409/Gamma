@@ -14,7 +14,9 @@ import timber.log.Timber
 import java.io.File
 import java.io.InputStream
 
-class BiosManager(private val directoriesManager: DirectoriesManager) {
+class BiosManager(
+    private val directoriesManager: DirectoriesManager,
+) {
     private val crcLookup = SUPPORTED_BIOS.associateByNotNull { it.externalCRC32 }
     private val nameLookup = SUPPORTED_BIOS.associateByNotNull { it.externalName }
 
@@ -34,7 +36,8 @@ class BiosManager(private val directoriesManager: DirectoriesManager) {
         Timber.d("Found game labels: $gameLabels")
 
         val requiredRegionalFiles =
-            gameLabels.intersect(regionalBiosFiles.keys)
+            gameLabels
+                .intersect(regionalBiosFiles.keys)
                 .ifEmpty { regionalBiosFiles.keys }
                 .mapNotNull { regionalBiosFiles[it] }
 
@@ -58,9 +61,10 @@ class BiosManager(private val directoriesManager: DirectoriesManager) {
     @Deprecated("Use the suspend variant")
     fun getBiosInfo(): BiosInfo {
         val bios =
-            SUPPORTED_BIOS.groupBy {
-                File(directoriesManager.getSystemDirectory(), it.libretroFileName).exists()
-            }.withDefault { listOf() }
+            SUPPORTED_BIOS
+                .groupBy {
+                    File(directoriesManager.getSystemDirectory(), it.libretroFileName).exists()
+                }.withDefault { listOf() }
 
         return BiosInfo(bios.getValue(true), bios.getValue(false))
     }
@@ -89,17 +93,16 @@ class BiosManager(private val directoriesManager: DirectoriesManager) {
         return true
     }
 
-    private fun findByCRC(storageFile: StorageFile): Bios? {
-        return crcLookup[storageFile.crc]
-    }
+    private fun findByCRC(storageFile: StorageFile): Bios? = crcLookup[storageFile.crc]
 
-    private fun findByName(storageFile: StorageFile): Bios? {
-        return nameLookup[storageFile.name]
-    }
+    private fun findByName(storageFile: StorageFile): Bios? = nameLookup[storageFile.name]
 
     private fun normalizeTimestamp(timestamp: Long) = (timestamp / 1000) * 1000
 
-    data class BiosInfo(val detected: List<Bios>, val notDetected: List<Bios>)
+    data class BiosInfo(
+        val detected: List<Bios>,
+        val notDetected: List<Bios>,
+    )
 
     companion object {
         private val SUPPORTED_BIOS =

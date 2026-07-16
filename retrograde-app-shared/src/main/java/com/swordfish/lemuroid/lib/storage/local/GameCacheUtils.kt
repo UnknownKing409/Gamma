@@ -36,7 +36,5 @@ object GameCacheUtils {
         return gamesCacheDir
     }
 
-    private fun buildPath(vararg chunks: String): String {
-        return chunks.joinToString(separator = File.separator)
-    }
+    private fun buildPath(vararg chunks: String): String = chunks.joinToString(separator = File.separator)
 }

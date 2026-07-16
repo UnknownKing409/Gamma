@@ -32,21 +32,20 @@ fun <K, V> Map<K, V?>.filterNotNullValues(): Map<K, V> {
 inline fun <X, Y, Z, H> Map<X, Y>.zipOnKeys(
     other: Map<X, Z>,
     f: (Y, Z) -> H,
-): Map<X, H> {
-    return this.keys.intersect(other.keys)
+): Map<X, H> =
+    this.keys
+        .intersect(other.keys)
         .map { key ->
             key to f(this[key]!!, other[key]!!)
-        }
-        .toMap()
-}
+        }.toMap()
 
 fun <E> Array<E>.toIndexedMap(): Map<Int, E> =
     this
         .mapIndexed { index, e -> index to e }
         .toMap()
 
-inline fun <T, K> Iterable<T>.associateByNotNull(keySelector: (T) -> K?): Map<K, T> {
-    return this.map { keySelector(it) to it }
+inline fun <T, K> Iterable<T>.associateByNotNull(keySelector: (T) -> K?): Map<K, T> =
+    this
+        .map { keySelector(it) to it }
         .filter { (key, _) -> key != null }
         .associate { (key, value) -> key!! to value }
-}

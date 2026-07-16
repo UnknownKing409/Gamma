@@ -27,8 +27,9 @@ import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import javax.inject.Inject
 
-abstract class RetrogradeActivity : FragmentActivity(), HasAndroidInjector {
-
+abstract class RetrogradeActivity :
+    FragmentActivity(),
+    HasAndroidInjector {
     @Inject
     lateinit var frameworkFragmentInjector: DispatchingAndroidInjector<Any>
 

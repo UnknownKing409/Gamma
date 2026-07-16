@@ -56,7 +56,8 @@ class CoreUpdaterImpl(
         coreIDs: List<CoreID>,
     ) {
         val sharedPreferences = SharedPreferencesHelper.getSharedPreferences(context.applicationContext)
-        coreIDs.asFlow()
+        coreIDs
+            .asFlow()
             .onEach { retrieveAssets(it, sharedPreferences) }
             .onEach { retrieveFile(context, it) }
             .collect()
@@ -73,7 +74,8 @@ class CoreUpdaterImpl(
         coreID: CoreID,
         sharedPreferences: SharedPreferences,
     ) {
-        CoreID.getAssetManager(coreID)
+        CoreID
+            .getAssetManager(coreID)
             .retrieveAssetsIfNeeded(api, directoriesManager, sharedPreferences)
     }
 
@@ -98,7 +100,8 @@ class CoreUpdaterImpl(
         }
 
         val uri =
-            baseUri.buildUpon()
+            baseUri
+                .buildUpon()
                 .appendEncodedPath("raw/$CORES_VERSION/lemuroid_core_${coreID.coreName}/src/main/jniLibs/")
                 .appendPath(Build.SUPPORTED_ABIS.first())
                 .appendPath(libFileName)
@@ -141,7 +144,8 @@ class CoreUpdaterImpl(
         mainCoresDirectory: File,
         applicationVersion: String,
     ) {
-        mainCoresDirectory.listFiles()
+        mainCoresDirectory
+            .listFiles()
             ?.filter { it.name != applicationVersion }
             ?.forEach { it.deleteRecursively() }
     }

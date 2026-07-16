@@ -11,7 +11,9 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 
-class StatesPreviewManager(private val directoriesManager: DirectoriesManager) {
+class StatesPreviewManager(
+    private val directoriesManager: DirectoriesManager,
+) {
     suspend fun getPreviewForSlot(
         game: Game,
         coreID: CoreID,

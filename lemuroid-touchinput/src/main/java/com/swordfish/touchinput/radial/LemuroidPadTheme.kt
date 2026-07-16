@@ -10,9 +10,7 @@ class LemuroidPadTheme {
     private fun gray(
         luminosity: Float,
         opacity: Float,
-    ): Color {
-        return Color(luminosity, luminosity, luminosity, opacity)
-    }
+    ): Color = Color(luminosity, luminosity, luminosity, opacity)
 
     val foregroundPadding: Dp = 8.dp
     val padding: Dp = 4.dp
@@ -39,29 +37,26 @@ class LemuroidPadTheme {
     val level0Shadow = DefaultShadowColor.copy(0.10f)
     val level0ShadowWidth = 2.dp
 
-    fun compositeFill(pressed: Boolean): Color {
-        return if (pressed) {
+    fun compositeFill(pressed: Boolean): Color =
+        if (pressed) {
             level2FillPressed
         } else {
             level2Fill
         }
-    }
 
-    fun foregroundFill(pressed: Boolean): Color {
-        return if (pressed) {
+    fun foregroundFill(pressed: Boolean): Color =
+        if (pressed) {
             level3FillPressed
         } else {
             level3Fill
         }
-    }
 
-    fun icons(pressed: Boolean): Color {
-        return if (pressed) {
+    fun icons(pressed: Boolean): Color =
+        if (pressed) {
             iconsPressed
         } else {
             icons
         }
-    }
 }
 
 val LocalLemuroidPadTheme =

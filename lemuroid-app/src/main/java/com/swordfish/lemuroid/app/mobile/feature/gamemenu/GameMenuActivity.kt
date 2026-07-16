@@ -97,11 +97,13 @@ class GameMenuActivity : RetrogradeComponentActivity() {
         val gameMenuRequest =
             GameMenuRequest(
                 coreOptions =
-                    intent.serializable<Array<LemuroidCoreOption>>(GameMenuContract.EXTRA_CORE_OPTIONS)
+                    intent
+                        .serializable<Array<LemuroidCoreOption>>(GameMenuContract.EXTRA_CORE_OPTIONS)
                         ?.toList()
                         ?: throw InvalidParameterException("Missing EXTRA_CORE_OPTIONS"),
                 advancedCoreOptions =
-                    intent.serializable<Array<LemuroidCoreOption>>(GameMenuContract.EXTRA_ADVANCED_CORE_OPTIONS)
+                    intent
+                        .serializable<Array<LemuroidCoreOption>>(GameMenuContract.EXTRA_ADVANCED_CORE_OPTIONS)
                         ?.toList()
                         ?: throw InvalidParameterException("Missing EXTRA_ADVANCED_CORE_OPTIONS"),
                 game =
@@ -124,7 +126,8 @@ class GameMenuActivity : RetrogradeComponentActivity() {
                     intent.serializable<TiltConfiguration>(GameMenuContract.EXTRA_CURRENT_TILT_CONFIG)
                         ?: TiltConfiguration.Disabled,
                 allTiltConfigurations =
-                    intent.serializable<Array<TiltConfiguration>>(GameMenuContract.EXTRA_TILT_ALL_CONFIGS)
+                    intent
+                        .serializable<Array<TiltConfiguration>>(GameMenuContract.EXTRA_TILT_ALL_CONFIGS)
                         ?.toList()
                         ?: emptyList(),
             )
@@ -143,7 +146,8 @@ class GameMenuActivity : RetrogradeComponentActivity() {
             val currentDestination = navBackStackEntry.value?.destination
 
             val currentRoute =
-                currentDestination?.route
+                currentDestination
+                    ?.route
                     ?.let { GameMenuRoute.findByRoute(it) }
                     ?: GameMenuRoute.HOME
 

@@ -14,9 +14,7 @@ class SharedPreferencesDelegates {
         override fun getValue(
             thisRef: Any,
             property: KProperty<*>,
-        ): Boolean {
-            return sharedPreferences.getBoolean(key, defaultValue)
-        }
+        ): Boolean = sharedPreferences.getBoolean(key, defaultValue)
 
         override fun setValue(
             thisRef: Any,
@@ -36,9 +34,7 @@ class SharedPreferencesDelegates {
         override fun getValue(
             thisRef: Any,
             property: KProperty<*>,
-        ): Float {
-            return indexToPercentage(sharedPreferences.getInt(key, defaultIndex))
-        }
+        ): Float = indexToPercentage(sharedPreferences.getInt(key, defaultIndex))
 
         override fun setValue(
             thisRef: Any,
@@ -61,9 +57,7 @@ class SharedPreferencesDelegates {
         override fun getValue(
             thisRef: Any,
             property: KProperty<*>,
-        ): String {
-            return sharedPreferences.getString(key, defaultValue) ?: defaultValue
-        }
+        ): String = sharedPreferences.getString(key, defaultValue) ?: defaultValue
 
         override fun setValue(
             thisRef: Any,
@@ -82,9 +76,7 @@ class SharedPreferencesDelegates {
         override fun getValue(
             thisRef: Any,
             property: KProperty<*>,
-        ): Long {
-            return sharedPreferences.getLong(key, defaultValue)
-        }
+        ): Long = sharedPreferences.getLong(key, defaultValue)
 
         override fun setValue(
             thisRef: Any,
@@ -103,9 +95,7 @@ class SharedPreferencesDelegates {
         override fun getValue(
             thisRef: Any,
             property: KProperty<*>,
-        ): Set<String> {
-            return sharedPreferences.getStringSet(key, defaultValue) ?: defaultValue
-        }
+        ): Set<String> = sharedPreferences.getStringSet(key, defaultValue) ?: defaultValue
 
         override fun setValue(
             thisRef: Any,

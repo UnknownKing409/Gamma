@@ -27,7 +27,8 @@ fun LemuroidGameImage(
 
     AsyncImage(
         model =
-            ImageRequest.Builder(LocalContext.current)
+            ImageRequest
+                .Builder(LocalContext.current)
                 .data(game.coverFrontUrl)
                 .build(),
         contentDescription = game.title,

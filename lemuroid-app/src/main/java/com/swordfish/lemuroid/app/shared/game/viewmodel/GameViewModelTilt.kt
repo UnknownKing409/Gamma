@@ -40,9 +40,7 @@ class GameViewModelTilt(
         tiltConfiguration.value = configuration
     }
 
-    fun getTiltConfiguration(): Flow<TiltConfiguration> {
-        return tiltConfiguration
-    }
+    fun getTiltConfiguration(): Flow<TiltConfiguration> = tiltConfiguration
 
     fun getSimulatedTiltEvents(): Flow<InputState> {
         return tiltConfiguration
@@ -52,7 +50,8 @@ class GameViewModelTilt(
                 }
 
                 tiltSensor.setSensitivity(settingsManager.tiltSensitivity())
-                tiltSensor.getTiltEvents()
+                tiltSensor
+                    .getTiltEvents()
                     .onStart { tiltSensor.shouldRun = true }
                     .onCompletion { tiltSensor.shouldRun = false }
                     .map { config.process(it) }

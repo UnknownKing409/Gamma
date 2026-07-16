@@ -18,11 +18,10 @@ interface LemuroidInputDevice {
     fun getSupportedShortcuts(): List<GameShortcutType>
 }
 
-fun InputDevice?.getLemuroidInputDevice(): LemuroidInputDevice {
-    return when {
+fun InputDevice?.getLemuroidInputDevice(): LemuroidInputDevice =
+    when {
         this == null -> LemuroidInputDeviceUnknown
         (sources and InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD -> LemuroidInputDeviceGamePad(this)
         (sources and InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD -> LemuroidInputDeviceKeyboard(this)
         else -> LemuroidInputDeviceUnknown
     }
-}

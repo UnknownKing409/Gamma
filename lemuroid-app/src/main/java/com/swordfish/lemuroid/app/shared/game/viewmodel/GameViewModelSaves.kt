@@ -118,9 +118,7 @@ class GameViewModelSaves(
         )
     }
 
-    private suspend fun isAutoSaveEnabled(): Boolean {
-        return systemCoreConfig.statesSupported && settingsManager.autoSave()
-    }
+    private suspend fun isAutoSaveEnabled(): Boolean = systemCoreConfig.statesSupported && settingsManager.autoSave()
 
     private suspend fun takeScreenshotPreview(index: Int) {
         val sizeInDp = StatesPreviewManager.PREVIEW_SIZE_DP

@@ -13,8 +13,7 @@ import gg.padkit.PadKitScope
 import gg.padkit.layouts.radial.LayoutRadial
 import gg.padkit.layouts.radial.secondarydials.LayoutRadialSecondaryDialsScope
 
-context(PadKitScope)
-@Composable
+context(PadKitScope) @Composable
 fun BaseLayoutLeft(
     modifier: Modifier = Modifier,
     settings: TouchControllerSettingsManager.Settings,
@@ -36,8 +35,7 @@ fun BaseLayoutLeft(
                 .absolutePadding(
                     left = TouchControllerSettingsManager.MAX_MARGINS.dp * settings.marginX,
                     bottom = TouchControllerSettingsManager.MAX_MARGINS.dp * settings.marginY,
-                )
-                .padding(LocalLemuroidPadTheme.current.padding),
+                ).padding(LocalLemuroidPadTheme.current.padding),
         primaryDial = primaryDial,
         secondaryDials = secondaryDials,
         primaryDialMaxSize = 160.dp * interpolatedDialSize,
@@ -45,8 +43,7 @@ fun BaseLayoutLeft(
     )
 }
 
-context(PadKitScope)
-@Composable
+context(PadKitScope) @Composable
 fun BaseLayoutRight(
     modifier: Modifier = Modifier,
     settings: TouchControllerSettingsManager.Settings,
@@ -59,8 +56,7 @@ fun BaseLayoutRight(
                 .absolutePadding(
                     right = TouchControllerSettingsManager.MAX_MARGINS.dp * settings.marginX,
                     bottom = TouchControllerSettingsManager.MAX_MARGINS.dp * settings.marginY,
-                )
-                .padding(LocalLemuroidPadTheme.current.padding),
+                ).padding(LocalLemuroidPadTheme.current.padding),
         primaryDial = primaryDial,
         secondaryDials = secondaryDials,
         primaryDialMaxSize =

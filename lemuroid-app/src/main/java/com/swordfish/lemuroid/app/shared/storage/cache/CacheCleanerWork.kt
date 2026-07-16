@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
-import androidx.work.ListenableWorker
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -51,9 +50,7 @@ class CacheCleanerWork(
         CacheCleaner.clean(context, size)
     }
 
-    private suspend fun cleanAll(context: Context) {
-        return CacheCleaner.cleanAll(context)
-    }
+    private suspend fun cleanAll(context: Context) = CacheCleaner.cleanAll(context)
 
     companion object {
         private val UNIQUE_WORK_ID: String = CacheCleanerWork::class.java.simpleName

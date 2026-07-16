@@ -60,7 +60,8 @@ class PPSSPPAssetsManager : CoreID.AssetsManager {
             }
         }
 
-        sharedPreferences.edit()
+        sharedPreferences
+            .edit()
             .putString(PPSSPP_ASSETS_VERSION_KEY, PPSSPP_ASSETS_VERSION)
             .commit()
     }
@@ -78,17 +79,17 @@ class PPSSPPAssetsManager : CoreID.AssetsManager {
             !directoryExists || !hasCurrentVersion
         }
 
-    private suspend fun getAssetsDirectory(directoriesManager: DirectoriesManager): File {
-        return withContext(Dispatchers.IO) {
+    private suspend fun getAssetsDirectory(directoriesManager: DirectoriesManager): File =
+        withContext(Dispatchers.IO) {
             File(directoriesManager.getSystemDirectory(), PPSSPP_ASSETS_FOLDER_NAME)
         }
-    }
 
     companion object {
         const val PPSSPP_ASSETS_VERSION = "1.15"
 
         val PPSSPP_ASSETS_URL: Uri =
-            Uri.parse("https://github.com/Swordfish90/LemuroidCores/")
+            Uri
+                .parse("https://github.com/Swordfish90/LemuroidCores/")
                 .buildUpon()
                 .appendEncodedPath("raw/$PPSSPP_ASSETS_VERSION/assets/ppsspp.zip")
                 .build()

@@ -11,7 +11,9 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.swordfish.lemuroid.R
 
-class NotificationsManager(private val applicationContext: Context) {
+class NotificationsManager(
+    private val applicationContext: Context,
+) {
     fun gameRunningNotification(gameIntent: Intent): Notification {
         createDefaultNotificationChannel()
 
@@ -30,7 +32,8 @@ class NotificationsManager(private val applicationContext: Context) {
         val title = applicationContext.getString(R.string.game_running_notification_title_alternative)
 
         val builder =
-            NotificationCompat.Builder(applicationContext, DEFAULT_CHANNEL_ID)
+            NotificationCompat
+                .Builder(applicationContext, DEFAULT_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_lemuroid_tiny)
                 .setContentTitle(title)
                 .setContentText(applicationContext.getString(R.string.game_running_notification_message))

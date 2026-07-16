@@ -25,7 +25,9 @@ import java.io.File
 import java.io.InputStream
 import java.util.zip.ZipInputStream
 
-class StorageAccessFrameworkProvider(private val context: Context) : StorageProvider {
+class StorageAccessFrameworkProvider(
+    private val context: Context,
+) : StorageProvider {
     override val id: String = "access_framework"
 
     override val name: String = context.getString(R.string.local_storage)
@@ -36,15 +38,13 @@ class StorageAccessFrameworkProvider(private val context: Context) : StorageProv
 
     override val enabledByDefault = true
 
-    override fun listBaseStorageFiles(): Flow<List<BaseStorageFile>> {
-        return getExternalFolder()?.let { folder ->
+    override fun listBaseStorageFiles(): Flow<List<BaseStorageFile>> =
+        getExternalFolder()?.let { folder ->
             traverseDirectoryEntries(Uri.parse(folder))
         } ?: emptyFlow()
-    }
 
-    override fun getStorageFile(baseStorageFile: BaseStorageFile): StorageFile? {
-        return DocumentFileParser.parseDocumentFile(context, baseStorageFile)
-    }
+    override fun getStorageFile(baseStorageFile: BaseStorageFile): StorageFile? =
+        DocumentFileParser.parseDocumentFile(context, baseStorageFile)
 
     override fun getGameArtUri(gameFileUri: Uri): Uri? {
         return runCatching {
@@ -261,12 +261,11 @@ class StorageAccessFrameworkProvider(private val context: Context) : StorageProv
         return RomFiles.Virtual(listOf(gameEntry) + dataEntries)
     }
 
-    private fun getDataFileVirtual(dataFile: DataFile): RomFiles.Virtual.Entry {
-        return RomFiles.Virtual.Entry(
+    private fun getDataFileVirtual(dataFile: DataFile): RomFiles.Virtual.Entry =
+        RomFiles.Virtual.Entry(
             "$VIRTUAL_FILE_PATH/${dataFile.fileName}",
             context.contentResolver.openFileDescriptor(Uri.parse(dataFile.fileUri), "r")!!,
         )
-    }
 
     private fun getDataFileStandard(
         game: Game,
@@ -289,12 +288,11 @@ class StorageAccessFrameworkProvider(private val context: Context) : StorageProv
         return cacheFile
     }
 
-    private fun getGameRomVirtual(game: Game): RomFiles.Virtual.Entry {
-        return RomFiles.Virtual.Entry(
+    private fun getGameRomVirtual(game: Game): RomFiles.Virtual.Entry =
+        RomFiles.Virtual.Entry(
             "$VIRTUAL_FILE_PATH/${game.fileName}",
             context.contentResolver.openFileDescriptor(Uri.parse(game.fileUri), "r")!!,
         )
-    }
 
     private fun getGameRomStandard(
         game: Game,
@@ -311,9 +309,7 @@ class StorageAccessFrameworkProvider(private val context: Context) : StorageProv
         return cacheFile
     }
 
-    override fun getInputStream(uri: Uri): InputStream? {
-        return context.contentResolver.openInputStream(uri)
-    }
+    override fun getInputStream(uri: Uri): InputStream? = context.contentResolver.openInputStream(uri)
 
     companion object {
         const val SAF_CACHE_SUBFOLDER = "storage-framework-games"

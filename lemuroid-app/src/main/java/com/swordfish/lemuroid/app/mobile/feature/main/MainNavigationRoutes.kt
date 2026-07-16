@@ -71,13 +71,9 @@ enum class MainRoute(
 
     val root = root()
 
-    private fun root(): MainRoute {
-        return parent?.root() ?: this
-    }
+    private fun root(): MainRoute = parent?.root() ?: this
 
     companion object {
-        fun findByRoute(route: String): MainRoute {
-            return values().first { it.route == route }
-        }
+        fun findByRoute(route: String): MainRoute = values().first { it.route == route }
     }
 }

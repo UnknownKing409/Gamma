@@ -17,7 +17,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import timber.log.Timber
 
-class TouchControllerSettingsManager(private val sharedPreferences: SharedPreferences) {
+class TouchControllerSettingsManager(
+    private val sharedPreferences: SharedPreferences,
+) {
     enum class Orientation {
         PORTRAIT,
         LANDSCAPE,
@@ -71,7 +73,8 @@ class TouchControllerSettingsManager(private val sharedPreferences: SharedPrefer
         val cachedStateFlow =
             cachedSettings.getOrPut(settingsKey) {
                 val currentSettings =
-                    sharedPreferences.getString(settingsKey, null)
+                    sharedPreferences
+                        .getString(settingsKey, null)
                         ?.let { Json.decodeFromString(Settings.serializer(), it) }
 
                 MutableStateFlow(currentSettings)
@@ -134,7 +137,5 @@ class TouchControllerSettingsManager(private val sharedPreferences: SharedPrefer
     private fun getPreferenceString(
         controllerID: TouchControllerID,
         orientation: Orientation,
-    ): String {
-        return "touch_controller_settings_${controllerID}_${orientation.ordinal}"
-    }
+    ): String = "touch_controller_settings_${controllerID}_${orientation.ordinal}"
 }

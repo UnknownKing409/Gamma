@@ -18,7 +18,5 @@ object ColorUtils {
         hue: Float,
         saturation: Float = 0.5f,
         lightness: Float = 0.5f,
-    ): Int {
-        return ColorUtils.HSLToColor(floatArrayOf(hue * 360f, saturation, lightness))
-    }
+    ): Int = ColorUtils.HSLToColor(floatArrayOf(hue * 360f, saturation, lightness))
 }

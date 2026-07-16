@@ -10,23 +10,23 @@ object LibraryIndexScheduler {
     val LIBRARY_INDEX_WORK_ID: String = LibraryIndexWork::class.java.simpleName
 
     fun scheduleLibrarySync(applicationContext: Context) {
-        WorkManager.getInstance(applicationContext)
+        WorkManager
+            .getInstance(applicationContext)
             .beginUniqueWork(
                 LIBRARY_INDEX_WORK_ID,
                 ExistingWorkPolicy.APPEND_OR_REPLACE,
                 OneTimeWorkRequestBuilder<LibraryIndexWork>().build(),
-            )
-            .enqueue()
+            ).enqueue()
     }
 
     fun scheduleCoreUpdate(applicationContext: Context) {
-        WorkManager.getInstance(applicationContext)
+        WorkManager
+            .getInstance(applicationContext)
             .beginUniqueWork(
                 CORE_UPDATE_WORK_ID,
                 ExistingWorkPolicy.APPEND_OR_REPLACE,
                 OneTimeWorkRequestBuilder<CoreUpdateWork>().build(),
-            )
-            .enqueue()
+            ).enqueue()
     }
 
     fun cancelLibrarySync(applicationContext: Context) {

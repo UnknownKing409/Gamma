@@ -12,7 +12,9 @@ import com.swordfish.lemuroid.app.shared.savesync.SaveSyncWork
 import com.swordfish.lemuroid.lib.library.CoreID
 import com.swordfish.lemuroid.lib.savesync.SaveSyncManager
 
-class SaveSyncPreferences(private val saveSyncManager: SaveSyncManager) {
+class SaveSyncPreferences(
+    private val saveSyncManager: SaveSyncManager,
+) {
     fun addSaveSyncPreferences(preferenceScreen: PreferenceScreen) {
         val context = preferenceScreen.context
 
@@ -98,7 +100,8 @@ class SaveSyncPreferences(private val saveSyncManager: SaveSyncManager) {
             dependency = keySyncEnabled(context)
             isEnabled = saveSyncManager.isConfigured() && !syncInProgress
             entries =
-                CoreID.values()
+                CoreID
+                    .values()
                     .map { saveSyncManager.getDisplayNameForCore(context, it) }
                     .toTypedArray()
             entryValues = CoreID.values().map { it.coreName }.toTypedArray()

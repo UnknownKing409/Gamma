@@ -6,6 +6,9 @@ continuation_indent_size=8
 insert_final_newline=true
 max_line_length=120
 ktlint_function_naming_ignore_when_annotated_with=Composable
+# context-receiver-wrapping conflicts with modifier-list-spacing on `context(...) @Composable`
+# declarations (each rule demands the other's fix in the same spot), so it can never pass. Disable it.
+ktlint_standard_context-receiver-wrapping=disabled
 
 [lemuroid-app/src/main/java/com/swordfish/lemuroid/app/shared/game/ShaderChooser.kt]
 max_line_length = off

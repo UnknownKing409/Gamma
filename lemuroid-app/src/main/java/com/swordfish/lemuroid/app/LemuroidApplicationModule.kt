@@ -134,7 +134,8 @@ abstract class LemuroidApplicationModule {
         @PerApp
         @JvmStatic
         fun retrogradeDb(app: LemuroidApplication) =
-            Room.databaseBuilder(app, RetrogradeDatabase::class.java, RetrogradeDatabase.DB_NAME)
+            Room
+                .databaseBuilder(app, RetrogradeDatabase::class.java, RetrogradeDatabase.DB_NAME)
                 .addCallback(GameSearchDao.CALLBACK)
                 .addMigrations(GameSearchDao.MIGRATION, Migrations.VERSION_8_9)
                 .fallbackToDestructiveMigration()
@@ -183,7 +184,8 @@ abstract class LemuroidApplicationModule {
         @PerApp
         @JvmStatic
         fun okHttpClient(): OkHttpClient =
-            OkHttpClient.Builder()
+            OkHttpClient
+                .Builder()
                 .connectTimeout(1, TimeUnit.MINUTES)
                 .readTimeout(1, TimeUnit.MINUTES)
                 .build()
@@ -192,7 +194,8 @@ abstract class LemuroidApplicationModule {
         @PerApp
         @JvmStatic
         fun retrofit(): Retrofit =
-            Retrofit.Builder()
+            Retrofit
+                .Builder()
                 .baseUrl("https://example.com")
                 .addConverterFactory(
                     object : Converter.Factory() {
@@ -214,8 +217,7 @@ abstract class LemuroidApplicationModule {
                             return null
                         }
                     },
-                )
-                .build()
+                ).build()
 
         @Provides
         @PerApp

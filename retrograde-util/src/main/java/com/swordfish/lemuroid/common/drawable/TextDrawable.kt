@@ -9,7 +9,10 @@ import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.text.TextPaint
 
-class TextDrawable(private val text: String, private val color: Int) : Drawable() {
+class TextDrawable(
+    private val text: String,
+    private val color: Int,
+) : Drawable() {
     companion object {
         private const val DEFAULT_COLOR = Color.WHITE
     }

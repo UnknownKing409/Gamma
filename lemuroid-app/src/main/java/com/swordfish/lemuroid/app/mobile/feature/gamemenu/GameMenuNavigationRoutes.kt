@@ -46,13 +46,9 @@ enum class GameMenuRoute(
     ),
     ;
 
-    fun canGoBack(): Boolean {
-        return parent != null
-    }
+    fun canGoBack(): Boolean = parent != null
 
     companion object {
-        fun findByRoute(route: String): GameMenuRoute {
-            return values().first { it.route == route }
-        }
+        fun findByRoute(route: String): GameMenuRoute = values().first { it.route == route }
     }
 }

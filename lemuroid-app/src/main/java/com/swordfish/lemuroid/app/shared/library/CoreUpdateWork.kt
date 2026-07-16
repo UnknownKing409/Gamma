@@ -18,8 +18,10 @@ import kotlinx.coroutines.flow.toList
 import timber.log.Timber
 import javax.inject.Inject
 
-class CoreUpdateWork(context: Context, workerParams: WorkerParameters) :
-    CoroutineWorker(context, workerParams) {
+class CoreUpdateWork(
+    context: Context,
+    workerParams: WorkerParameters,
+) : CoroutineWorker(context, workerParams) {
     @Inject
     lateinit var retrogradeDatabase: RetrogradeDatabase
 
@@ -36,7 +38,9 @@ class CoreUpdateWork(context: Context, workerParams: WorkerParameters) :
 
         try {
             val cores =
-                retrogradeDatabase.gameDao().selectSystems()
+                retrogradeDatabase
+                    .gameDao()
+                    .selectSystems()
                     .asFlow()
                     .map { GameSystem.findById(it) }
                     .map { coresSelection.getCoreConfigForSystem(it) }

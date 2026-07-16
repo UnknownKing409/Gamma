@@ -2,7 +2,10 @@ package com.swordfish.lemuroid.common.math
 
 import kotlin.math.roundToInt
 
-data class Fraction(val numerator: Int, val denominator: Int) {
+data class Fraction(
+    val numerator: Int,
+    val denominator: Int,
+) {
     val floatValue = numerator.toFloat() / denominator.toFloat()
 
     companion object {
@@ -10,8 +13,6 @@ data class Fraction(val numerator: Int, val denominator: Int) {
         fun fromValue(
             value: Float,
             denominator: Int,
-        ): Fraction {
-            return Fraction((value * denominator).roundToInt(), denominator)
-        }
+        ): Fraction = Fraction((value * denominator).roundToInt(), denominator)
     }
 }

@@ -80,7 +80,8 @@ class ActivateGoogleDriveActivity : Activity() {
 
     private fun googleSignInClient(): GoogleSignInClient {
         val signInOptions =
-            GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            GoogleSignInOptions
+                .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestId()
                 .requestEmail()
                 .requestScopes(Scope(DriveScopes.DRIVE_APPDATA))

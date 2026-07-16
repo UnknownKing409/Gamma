@@ -13,7 +13,9 @@ import com.swordfish.lemuroid.app.shared.input.retroKeysOf
 import com.swordfish.lemuroid.app.shared.input.supportsAllKeys
 import com.swordfish.lemuroid.app.shared.settings.GameShortcutType
 
-class LemuroidInputDeviceGamePad(private val device: InputDevice) : LemuroidInputDevice {
+class LemuroidInputDeviceGamePad(
+    private val device: InputDevice,
+) : LemuroidInputDevice {
     override fun getDefaultBindings(): Map<InputKey, RetroKey> {
         val allAvailableInputs =
             InputDeviceManager.OUTPUT_KEYS
@@ -45,20 +47,17 @@ class LemuroidInputDeviceGamePad(private val device: InputDevice) : LemuroidInpu
         return defaultBinding
     }
 
-    override fun isEnabledByDefault(appContext: Context): Boolean {
-        return device.supportsAllKeys(MINIMAL_KEYS_DEFAULT_ENABLED)
-    }
+    override fun isEnabledByDefault(appContext: Context): Boolean = device.supportsAllKeys(MINIMAL_KEYS_DEFAULT_ENABLED)
 
     override fun getSupportedShortcuts(): List<GameShortcutType> = GameShortcutType.values().toList()
 
-    override fun isSupported(): Boolean {
-        return sequenceOf(
+    override fun isSupported(): Boolean =
+        sequenceOf(
             device.sources and InputDevice.SOURCE_GAMEPAD == InputDevice.SOURCE_GAMEPAD,
             device.supportsAllKeys(MINIMAL_SUPPORTED_KEYS),
             device.isVirtual.not(),
             device.controllerNumber > 0,
         ).all { it }
-    }
 
     override fun getCustomizableKeys(): List<RetroKey> {
         val deviceAxis =
@@ -67,7 +66,9 @@ class LemuroidInputDeviceGamePad(private val device: InputDevice) : LemuroidInpu
                 .toSet()
 
         val keysMappedToAxis =
-            device.getInputClass().getAxesMap()
+            device
+                .getInputClass()
+                .getAxesMap()
                 .filter { it.key in deviceAxis }
                 .map { it.value }
                 .toSet()

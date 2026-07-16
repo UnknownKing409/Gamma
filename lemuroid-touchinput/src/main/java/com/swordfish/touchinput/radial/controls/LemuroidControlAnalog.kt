@@ -13,8 +13,7 @@ import gg.padkit.PadKitScope
 import gg.padkit.controls.ControlAnalog
 import gg.padkit.ids.Id
 
-context(PadKitScope)
-@Composable
+context(PadKitScope) @Composable
 fun LemuroidControlAnalog(
     modifier: Modifier = Modifier,
     analogPressId: Id.Key? = null,

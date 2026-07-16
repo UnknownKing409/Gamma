@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -108,17 +107,27 @@ private sealed interface GridEntry {
     val isFullSpan: Boolean
     val key: String
 
-    data class Notification(val notification: HomeNotificationType) : GridEntry {
+    data class Notification(
+        val notification: HomeNotificationType,
+    ) : GridEntry {
         override val isFullSpan = true
         override val key = "notification_${notification.name}"
     }
 
-    data class Header(val sectionId: String, val iconRes: Int?, val title: String, val count: Int) : GridEntry {
+    data class Header(
+        val sectionId: String,
+        val iconRes: Int?,
+        val title: String,
+        val count: Int,
+    ) : GridEntry {
         override val isFullSpan = true
         override val key = "header_$sectionId"
     }
 
-    data class GameCell(val sectionId: String, val game: Game) : GridEntry {
+    data class GameCell(
+        val sectionId: String,
+        val game: Game,
+    ) : GridEntry {
         override val isFullSpan = false
         override val key = "game_${sectionId}_${game.id}"
     }
@@ -131,7 +140,11 @@ private enum class HomeNotificationType {
 }
 
 /** A jump target on the fast-scroll rail. [systemImageRes] is null for the Favorites entry. */
-private data class RailSection(val itemIndex: Int, val label: String, val systemImageRes: Int?)
+private data class RailSection(
+    val itemIndex: Int,
+    val label: String,
+    val systemImageRes: Int?,
+)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

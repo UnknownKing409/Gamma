@@ -38,8 +38,8 @@ object ShaderChooser {
         }
     }
 
-    private fun getDefaultShaderForSystem(system: GameSystem): ShaderConfig {
-        return when (system.id) {
+    private fun getDefaultShaderForSystem(system: GameSystem): ShaderConfig =
+        when (system.id) {
             SystemID.GBA -> ShaderConfig.LCD
             SystemID.GBC -> ShaderConfig.LCD
             SystemID.GB -> ShaderConfig.LCD
@@ -66,18 +66,16 @@ object ShaderChooser {
             SystemID.WSC -> ShaderConfig.LCD
             SystemID.NINTENDO_3DS -> ShaderConfig.LCD
         }
-    }
 
     private fun getHDShaderForSystem(
         system: GameSystem,
         hdModeQuality: HDModeQuality,
-    ): ShaderConfig {
-        return when (hdModeQuality) {
+    ): ShaderConfig =
+        when (hdModeQuality) {
             HDModeQuality.LOW -> getLowQualityHdMode(system)
             HDModeQuality.MEDIUM -> getMediumQualityHdMode(system)
             HDModeQuality.HIGH -> getHighQualityHdMode(system)
         }
-    }
 
     private fun getLowQualityHdMode(system: GameSystem): ShaderConfig {
         val upscale8BitsMobile =
@@ -261,8 +259,8 @@ object ShaderChooser {
         upscale16Bits: ShaderConfig,
         upscale8Bits: ShaderConfig,
         modern: ShaderConfig,
-    ): ShaderConfig {
-        return when (system.id) {
+    ): ShaderConfig =
+        when (system.id) {
             SystemID.GBA -> upscale16BitsMobile
             SystemID.GBC -> upscale8BitsMobile
             SystemID.GB -> upscale8BitsMobile
@@ -289,5 +287,4 @@ object ShaderChooser {
             SystemID.WSC -> upscale16BitsMobile
             SystemID.NINTENDO_3DS -> modern
         }
-    }
 }

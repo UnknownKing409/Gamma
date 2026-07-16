@@ -76,7 +76,8 @@ class CoreUpdaterImpl(
         sessionId: Int,
         installManager: SplitInstallManager,
     ) {
-        installManager.requestProgressFlow()
+        installManager
+            .requestProgressFlow()
             .filter { it.sessionId() == sessionId }
             .onEach { log("Session status for id $sessionId updated to $it") }
             .takeWhile { !it.hasTerminalStatus }
@@ -113,7 +114,8 @@ class CoreUpdaterImpl(
         coreIDs: List<CoreID>,
     ) {
         val sharedPreferences = SharedPreferencesHelper.getSharedPreferences(context.applicationContext)
-        coreIDs.asFlow()
+        coreIDs
+            .asFlow()
             .map { CoreID.getAssetManager(it) }
             .onEach { it.retrieveAssetsIfNeeded(api, directoriesManager, sharedPreferences) }
             .collect()

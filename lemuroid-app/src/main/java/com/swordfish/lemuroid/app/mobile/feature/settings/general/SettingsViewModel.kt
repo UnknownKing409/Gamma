@@ -27,14 +27,13 @@ class SettingsViewModel(
         private val saveSyncManager: SaveSyncManager,
         private val sharedPreferences: FlowSharedPreferences,
     ) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return SettingsViewModel(
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            SettingsViewModel(
                 context,
                 settingsInteractor,
                 saveSyncManager,
                 sharedPreferences,
             ) as T
-        }
     }
 
     data class State(
@@ -47,7 +46,8 @@ class SettingsViewModel(
     val directoryScanInProgress = PendingOperationsMonitor(context).isDirectoryScanInProgress()
 
     val uiState =
-        sharedPreferences.getString(context.getString(com.swordfish.lemuroid.lib.R.string.pref_key_extenral_folder))
+        sharedPreferences
+            .getString(context.getString(com.swordfish.lemuroid.lib.R.string.pref_key_extenral_folder))
             .asFlow()
             .flowOn(Dispatchers.IO)
             .stateIn(viewModelScope, SharingStarted.Lazily, "")

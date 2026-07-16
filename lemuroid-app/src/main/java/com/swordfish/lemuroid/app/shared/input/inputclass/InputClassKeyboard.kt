@@ -5,13 +5,9 @@ import com.swordfish.lemuroid.app.shared.input.InputKey
 import com.swordfish.lemuroid.app.shared.input.inputKeySetOf
 
 object InputClassKeyboard : InputClass {
-    override fun getInputKeys(): Set<InputKey> {
-        return INPUT_KEYS
-    }
+    override fun getInputKeys(): Set<InputKey> = INPUT_KEYS
 
-    override fun getAxesMap(): Map<Int, Int> {
-        return emptyMap()
-    }
+    override fun getAxesMap(): Map<Int, Int> = emptyMap()
 
     private val INPUT_KEYS =
         inputKeySetOf(

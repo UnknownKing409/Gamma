@@ -92,9 +92,7 @@ class GameInteractor(
         }
     }
 
-    fun supportShortcuts(): Boolean {
-        return shortcutsGenerator.supportShortcuts()
-    }
+    fun supportShortcuts(): Boolean = shortcutsGenerator.supportShortcuts()
 
     private fun ensureNotBusy(): Boolean {
         if (activity.isBusy()) {

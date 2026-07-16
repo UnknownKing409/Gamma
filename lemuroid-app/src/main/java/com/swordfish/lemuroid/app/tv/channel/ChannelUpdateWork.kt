@@ -3,7 +3,6 @@ package com.swordfish.lemuroid.app.tv.channel
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
-import androidx.work.ListenableWorker
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -15,8 +14,10 @@ import dagger.multibindings.IntoMap
 import timber.log.Timber
 import javax.inject.Inject
 
-class ChannelUpdateWork(context: Context, workerParams: WorkerParameters) :
-    CoroutineWorker(context, workerParams) {
+class ChannelUpdateWork(
+    context: Context,
+    workerParams: WorkerParameters,
+) : CoroutineWorker(context, workerParams) {
     @Inject
     lateinit var channelHandler: ChannelHandler
 

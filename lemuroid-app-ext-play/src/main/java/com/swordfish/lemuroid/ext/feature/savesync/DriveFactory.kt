@@ -32,7 +32,9 @@ import com.google.api.services.drive.DriveScopes
 // RestrictedApi warning is a known issue:
 // https://developers.google.com/android/guides/releases#march_20_2018_-_version_1200
 @SuppressLint("RestrictedApi")
-class DriveFactory(private val context: Context) {
+class DriveFactory(
+    private val context: Context,
+) {
     fun create(): Drive? {
         val googleAccount = GoogleSignIn.getLastSignedInAccount(context) ?: return null
 
@@ -44,7 +46,8 @@ class DriveFactory(private val context: Context) {
         val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
         val jsonFactory = GsonFactory.getDefaultInstance()
 
-        return Drive.Builder(httpTransport, jsonFactory, credential)
+        return Drive
+            .Builder(httpTransport, jsonFactory, credential)
             .setApplicationName("com.swordfish.lemuroid")
             .build()
     }

@@ -15,7 +15,11 @@ fun Bundle?.dump(): String {
     keySet()
         .toSet()
         .forEach { key ->
-            builder.append(key).append(": ").append(get(key)).append("\n")
+            builder
+                .append(key)
+                .append(": ")
+                .append(get(key))
+                .append("\n")
         }
     return builder.toString()
 }
@@ -34,17 +38,11 @@ fun Activity.displayToast(
     Toast.makeText(this, stringId, length).show()
 }
 
-fun Context.animationDuration(): Int {
-    return resources.getInteger(android.R.integer.config_mediumAnimTime)
-}
+fun Context.animationDuration(): Int = resources.getInteger(android.R.integer.config_mediumAnimTime)
 
-fun Context.shortAnimationDuration(): Int {
-    return resources.getInteger(android.R.integer.config_shortAnimTime)
-}
+fun Context.shortAnimationDuration(): Int = resources.getInteger(android.R.integer.config_shortAnimTime)
 
-fun Context.longAnimationDuration(): Int {
-    return resources.getInteger(android.R.integer.config_longAnimTime)
-}
+fun Context.longAnimationDuration(): Int = resources.getInteger(android.R.integer.config_longAnimTime)
 
 fun Context.displayDetailsSettingsScreen() {
     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)

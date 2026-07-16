@@ -21,9 +21,8 @@ class SaveSyncSettingsViewModel(
         private val application: Application,
         private val saveSyncManager: SaveSyncManager,
     ) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return SaveSyncSettingsViewModel(application, saveSyncManager) as T
-        }
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            SaveSyncSettingsViewModel(application, saveSyncManager) as T
     }
 
     val saveSyncInProgress = PendingOperationsMonitor(getContext()).anySaveOperationInProgress()
@@ -47,8 +46,8 @@ class SaveSyncSettingsViewModel(
                 State(),
             )
 
-    private fun buildState(): State {
-        return State(
+    private fun buildState(): State =
+        State(
             saveSyncManager.isConfigured(),
             saveSyncManager.getConfigInfo(),
             saveSyncManager.computeSavesSpace(),
@@ -58,18 +57,13 @@ class SaveSyncSettingsViewModel(
             saveSyncManager.getProvider(),
             saveSyncManager.getSettingsActivity(),
         )
-    }
 
-    private fun computeCoreNames(): List<String> {
-        return CoreID.values().map { it.coreName }
-    }
+    private fun computeCoreNames(): List<String> = CoreID.values().map { it.coreName }
 
     private fun computeCoreVisibleNames(): List<String> {
         val context = getContext()
         return CoreID.values().map { saveSyncManager.getDisplayNameForCore(context, it) }
     }
 
-    private fun getContext(): Context {
-        return application.applicationContext
-    }
+    private fun getContext(): Context = application.applicationContext
 }

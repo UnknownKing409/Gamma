@@ -13,7 +13,9 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.File
 
-class StatesManager(private val directoriesManager: DirectoriesManager) {
+class StatesManager(
+    private val directoriesManager: DirectoriesManager,
+) {
     suspend fun getSlotSave(
         game: Game,
         coreID: CoreID,
@@ -73,8 +75,8 @@ class StatesManager(private val directoriesManager: DirectoriesManager) {
     private suspend fun getSaveState(
         fileName: String,
         coreName: String,
-    ): SaveState? {
-        return runCatchingWithRetry(FILE_ACCESS_RETRIES) {
+    ): SaveState? =
+        runCatchingWithRetry(FILE_ACCESS_RETRIES) {
             val saveFile = getStateFile(fileName, coreName)
             val metadataFile = getMetadataStateFile(fileName, coreName)
             if (saveFile.exists()) {
@@ -91,7 +93,6 @@ class StatesManager(private val directoriesManager: DirectoriesManager) {
                 null
             }
         }.getOrNull()
-    }
 
     private suspend fun setSaveState(
         fileName: String,

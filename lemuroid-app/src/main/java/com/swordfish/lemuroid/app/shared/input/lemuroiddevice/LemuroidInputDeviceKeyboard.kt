@@ -10,24 +10,24 @@ import com.swordfish.lemuroid.app.shared.input.inputKeysOf
 import com.swordfish.lemuroid.app.shared.input.supportsAllKeys
 import com.swordfish.lemuroid.app.shared.settings.GameShortcutType
 
-class LemuroidInputDeviceKeyboard(private val device: InputDevice) : LemuroidInputDevice {
+class LemuroidInputDeviceKeyboard(
+    private val device: InputDevice,
+) : LemuroidInputDevice {
     override fun getCustomizableKeys(): List<RetroKey> = InputDeviceManager.OUTPUT_KEYS
 
     override fun getDefaultBindings() = DEFAULT_BINDINGS
 
-    override fun isEnabledByDefault(appContext: Context): Boolean {
-        return !appContext.packageManager.hasSystemFeature("android.hardware.touchscreen")
-    }
+    override fun isEnabledByDefault(appContext: Context): Boolean =
+        !appContext.packageManager.hasSystemFeature("android.hardware.touchscreen")
 
     override fun getSupportedShortcuts(): List<GameShortcutType> = emptyList()
 
-    override fun isSupported(): Boolean {
-        return sequenceOf(
+    override fun isSupported(): Boolean =
+        sequenceOf(
             (device.sources and InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD,
             device.supportsAllKeys(MINIMAL_SUPPORTED_KEYS),
             device.isVirtual.not(),
         ).all { it }
-    }
 
     companion object {
         private val MINIMAL_SUPPORTED_KEYS =

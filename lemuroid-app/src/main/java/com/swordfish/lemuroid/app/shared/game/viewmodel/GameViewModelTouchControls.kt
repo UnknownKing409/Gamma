@@ -68,19 +68,16 @@ class GameViewModelTouchControls(
     fun getTouchControlsSettings(
         density: Density,
         insets: WindowInsets,
-    ): Flow<TouchControllerSettingsManager.Settings?> {
-        return combine(
+    ): Flow<TouchControllerSettingsManager.Settings?> =
+        combine(
             touchControlId,
             screenOrientation,
         ) { touchControlId, orientation -> touchControlId to orientation }
             .flatMapLatest { (touchControlId, orientation) ->
                 touchControllerSettingsManager.observeSettings(touchControlId, orientation, density, insets)
             }
-    }
 
-    fun getTouchHapticFeedbackMode(): Flow<HapticFeedbackMode> {
-        return hapticFeedbackMode
-    }
+    fun getTouchHapticFeedbackMode(): Flow<HapticFeedbackMode> = hapticFeedbackMode
 
     fun updateTouchControllerSettings(touchControllerSettings: TouchControllerSettingsManager.Settings) {
         scope.launch {
@@ -105,17 +102,17 @@ class GameViewModelTouchControls(
         screenOrientation.value = orientation
     }
 
-    fun isTouchControllerVisible(): Flow<Boolean> {
-        return inputs.getEnabledInputDevices()
+    fun isTouchControllerVisible(): Flow<Boolean> =
+        inputs
+            .getEnabledInputDevices()
             .map { it.isEmpty() }
-    }
 
-    fun getTouchControllerConfig(): Flow<ControllerConfig> {
-        return inputs.getControllerConfigState()
+    fun getTouchControllerConfig(): Flow<ControllerConfig> =
+        inputs
+            .getControllerConfigState()
             .map { it[0] }
             .filterNotNull()
             .distinctUntilChanged()
-    }
 
     fun handleVirtualInputEvent(events: List<InputEvent>) {
         val menuEvent = events.firstOrNull { it is InputEvent.Button && it.id == KeyEvent.KEYCODE_BUTTON_MODE }
@@ -156,13 +153,9 @@ class GameViewModelTouchControls(
         }
     }
 
-    fun isMenuPressed(): Flow<Boolean> {
-        return menuPressed
-    }
+    fun isMenuPressed(): Flow<Boolean> = menuPressed
 
-    fun isEditControlsShown(): Flow<Boolean> {
-        return showEditControls
-    }
+    fun isEditControlsShown(): Flow<Boolean> = showEditControls
 
     fun showEditControls(show: Boolean) {
         showEditControls.value = show

@@ -12,14 +12,16 @@ import com.swordfish.lemuroid.metadata.libretrodb.db.entity.LibretroRom
 import timber.log.Timber
 import java.util.Locale
 
-class LibretroDBMetadataProvider(private val ovgdbManager: LibretroDBManager) :
-    GameMetadataProvider {
+class LibretroDBMetadataProvider(
+    private val ovgdbManager: LibretroDBManager,
+) : GameMetadataProvider {
     companion object {
         private val THUMB_REPLACE = Regex("[&*/:`<>?\\\\|]")
     }
 
     private val sortedSystemIds: List<String> by lazy {
-        SystemID.values()
+        SystemID
+            .values()
             .map { it.dbname }
             .sortedByDescending { it.length }
     }
@@ -62,21 +64,23 @@ class LibretroDBMetadataProvider(private val ovgdbManager: LibretroDBManager) :
     private suspend fun findByFilename(
         db: LibretroDatabase,
         file: StorageFile,
-    ): GameMetadata? {
-        return db.gameDao().findByFileName(file.name)
+    ): GameMetadata? =
+        db
+            .gameDao()
+            .findByFileName(file.name)
             .filterNullable { extractGameSystem(it).scanOptions.scanByFilename }
             ?.let { convertToGameMetadata(it) }
-    }
 
     private suspend fun findByPathAndFilename(
         db: LibretroDatabase,
         file: StorageFile,
-    ): GameMetadata? {
-        return db.gameDao().findByFileName(file.name)
+    ): GameMetadata? =
+        db
+            .gameDao()
+            .findByFileName(file.name)
             .filterNullable { extractGameSystem(it).scanOptions.scanByPathAndFilename }
             .filterNullable { parentContainsSystem(file.path, extractGameSystem(it).id.dbname) }
             ?.let { convertToGameMetadata(it) }
-    }
 
     private fun findByPathAndSupportedExtension(file: StorageFile): GameMetadata? {
         val system =
@@ -100,16 +104,15 @@ class LibretroDBMetadataProvider(private val ovgdbManager: LibretroDBManager) :
     private fun parentContainsSystem(
         parent: String?,
         dbname: String,
-    ): Boolean {
-        return parent?.lowercase(Locale.getDefault())?.contains(dbname) == true
-    }
+    ): Boolean = parent?.lowercase(Locale.getDefault())?.contains(dbname) == true
 
     private suspend fun findByCRC(
         file: StorageFile,
         db: LibretroDatabase,
     ): GameMetadata? {
         if (file.crc == null || file.crc == "0") return null
-        return file.crc?.let { crc32 -> db.gameDao().findByCRC(crc32) }
+        return file.crc
+            ?.let { crc32 -> db.gameDao().findByCRC(crc32) }
             ?.let { convertToGameMetadata(it) }
     }
 
@@ -118,7 +121,9 @@ class LibretroDBMetadataProvider(private val ovgdbManager: LibretroDBManager) :
         db: LibretroDatabase,
     ): GameMetadata? {
         if (file.serial == null) return null
-        return db.gameDao().findBySerial(file.serial!!)
+        return db
+            .gameDao()
+            .findBySerial(file.serial!!)
             ?.let { convertToGameMetadata(it) }
     }
 
@@ -155,9 +160,7 @@ class LibretroDBMetadataProvider(private val ovgdbManager: LibretroDBManager) :
         return result
     }
 
-    private fun extractGameSystem(rom: LibretroRom): GameSystem {
-        return GameSystem.findById(rom.system!!)
-    }
+    private fun extractGameSystem(rom: LibretroRom): GameSystem = GameSystem.findById(rom.system!!)
 
     private fun computeCoverUrl(
         system: GameSystem,

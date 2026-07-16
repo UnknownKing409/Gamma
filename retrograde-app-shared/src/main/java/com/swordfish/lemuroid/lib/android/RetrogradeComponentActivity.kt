@@ -8,7 +8,9 @@ import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import javax.inject.Inject
 
-abstract class RetrogradeComponentActivity : ComponentActivity(), HasAndroidInjector {
+abstract class RetrogradeComponentActivity :
+    ComponentActivity(),
+    HasAndroidInjector {
     @Inject
     lateinit var frameworkFragmentInjector: DispatchingAndroidInjector<Any>
 

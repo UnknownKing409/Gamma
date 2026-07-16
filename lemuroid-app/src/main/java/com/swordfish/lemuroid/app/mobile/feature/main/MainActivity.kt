@@ -7,8 +7,8 @@ import android.os.Bundle
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -67,7 +67,9 @@ import kotlinx.coroutines.GlobalScope
 import javax.inject.Inject
 
 @OptIn(DelicateCoroutinesApi::class)
-class MainActivity : RetrogradeComponentActivity(), BusyActivity {
+class MainActivity :
+    RetrogradeComponentActivity(),
+    BusyActivity {
     @Inject
     lateinit var gameLaunchTaskHandler: GameLaunchTaskHandler
 
@@ -122,7 +124,8 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
             val navBackStackEntry = navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry.value?.destination
             val currentRoute =
-                currentDestination?.route
+                currentDestination
+                    ?.route
                     ?.let { MainRoute.findByRoute(it) }
                     ?: MainRoute.HOME
 

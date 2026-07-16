@@ -14,7 +14,6 @@ class MainProcessInitializer : Initializer<Unit> {
         LibraryIndexScheduler.scheduleCoreUpdate(context)
     }
 
-    override fun dependencies(): List<Class<out Initializer<*>>> {
-        return listOf(WorkManagerInitializer::class.java, DebugInitializer::class.java)
-    }
+    override fun dependencies(): List<Class<out Initializer<*>>> =
+        listOf(WorkManagerInitializer::class.java, DebugInitializer::class.java)
 }

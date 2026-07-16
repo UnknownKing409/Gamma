@@ -71,7 +71,8 @@ class LemuroidLibrary(
     private suspend fun indexProviders(startedAtMs: Long) {
         val gameMetadata = gameMetadataProvider.get()
         val enabledProviders = storageProviderRegistry.get().enabledProviders
-        enabledProviders.asFlow()
+        enabledProviders
+            .asFlow()
             .flatMapConcat { indexSingleProvider(it, startedAtMs, gameMetadata) }
             .collect()
     }
@@ -81,12 +82,12 @@ class LemuroidLibrary(
         provider: StorageProvider,
         startedAtMs: Long,
         gameMetadata: GameMetadataProvider,
-    ): Flow<Unit> {
-        return provider.listBaseStorageFiles()
+    ): Flow<Unit> =
+        provider
+            .listBaseStorageFiles()
             .flatMapConcat { StorageFilesMerger.mergeDataFiles(provider, it).asFlow() }
             .batchWithSizeAndTime(MAX_BUFFER_SIZE, MAX_TIME)
             .flatMapMerge { processBatch(it, provider, startedAtMs, gameMetadata) }
-    }
 
     private suspend fun processBatch(
         batch: List<GroupedStorageFiles>,
@@ -100,7 +101,8 @@ class LemuroidLibrary(
         handleExistingEntries(existingEntries, startedAtMs)
 
         val newEntries =
-            entries.filterIsInstance<ScanEntry.File>()
+            entries
+                .filterIsInstance<ScanEntry.File>()
                 .map { buildEntryFromMetadata(it.file, provider, gameMetadata, startedAtMs) }
 
         handleNewEntries(newEntries, startedAtMs, provider)
@@ -115,13 +117,12 @@ class LemuroidLibrary(
     private fun buildScanEntry(
         storageFile: GroupedStorageFiles,
         game: Game?,
-    ): ScanEntry {
-        return if (game != null) {
+    ): ScanEntry =
+        if (game != null) {
             ScanEntry.GameFile(storageFile, game)
         } else {
             ScanEntry.File(storageFile)
         }
-    }
 
     private fun handleExistingEntries(
         entries: List<ScanEntry.GameFile>,
@@ -164,15 +165,14 @@ class LemuroidLibrary(
         gameId: Int,
         baseStorageFile: BaseStorageFile,
         startedAtMs: Long,
-    ): DataFile {
-        return DataFile(
+    ): DataFile =
+        DataFile(
             gameId = gameId,
             fileUri = baseStorageFile.uri.toString(),
             fileName = baseStorageFile.name,
             lastIndexedAt = startedAtMs,
             path = baseStorageFile.path,
         )
-    }
 
     private fun handleNewEntries(
         entries: List<ScanEntry>,
@@ -238,13 +238,13 @@ class LemuroidLibrary(
         startedAtMs: Long,
     ): ScanEntry {
         val game =
-            sortedFilesForScanning(groupedStorageFile).asFlow()
+            sortedFilesForScanning(groupedStorageFile)
+                .asFlow()
                 .mapNotNull { safeStorageFile(provider, it) }
                 .mapNotNull { storageFile ->
                     val metadata = metadataProvider.retrieveMetadata(storageFile)
                     convertGameMetadataToGame(groupedStorageFile, storageFile, metadata, provider, startedAtMs)
-                }
-                .firstOrNull()
+                }.firstOrNull()
 
         return buildScanEntry(groupedStorageFile, game)
     }
@@ -252,10 +252,9 @@ class LemuroidLibrary(
     private fun safeStorageFile(
         provider: StorageProvider,
         baseStorageFile: BaseStorageFile,
-    ): StorageFile? {
-        return runCatching { provider.getStorageFile(baseStorageFile) }
+    ): StorageFile? =
+        runCatching { provider.getStorageFile(baseStorageFile) }
             .getOrNull()
-    }
 
     private fun cleanUp(startedAtMs: Long) {
         kotlin.runCatching {
@@ -273,9 +272,10 @@ class LemuroidLibrary(
         biosManager.deleteBiosBefore(startedAtMs)
     }
 
-    private fun sortedFilesForScanning(groupedStorageFile: GroupedStorageFiles): List<BaseStorageFile> {
-        return groupedStorageFile.dataFiles.sortedBy { it.name } + listOf(groupedStorageFile.primaryFile)
-    }
+    private fun sortedFilesForScanning(groupedStorageFile: GroupedStorageFiles): List<BaseStorageFile> =
+        groupedStorageFile.dataFiles.sortedBy {
+            it.name
+        } + listOf(groupedStorageFile.primaryFile)
 
     private fun convertGameMetadataToGame(
         groupedStorageFile: GroupedStorageFiles,
@@ -350,9 +350,14 @@ class LemuroidLibrary(
     }
 
     private sealed class ScanEntry {
-        data class GameFile(val file: GroupedStorageFiles, val game: Game) : ScanEntry()
+        data class GameFile(
+            val file: GroupedStorageFiles,
+            val game: Game,
+        ) : ScanEntry()
 
-        data class File(val file: GroupedStorageFiles) : ScanEntry()
+        data class File(
+            val file: GroupedStorageFiles,
+        ) : ScanEntry()
     }
 
     companion object {

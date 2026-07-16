@@ -12,8 +12,7 @@ import gg.padkit.PadKitScope
 import gg.padkit.controls.ControlCross
 import gg.padkit.ids.Id
 
-context(PadKitScope)
-@Composable
+context(PadKitScope) @Composable
 fun LemuroidControlCross(
     modifier: Modifier = Modifier,
     id: Id.DiscreteDirection,

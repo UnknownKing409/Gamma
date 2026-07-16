@@ -46,18 +46,22 @@ class HomeViewModel(
         val retrogradeDb: RetrogradeDatabase,
         val coresSelection: CoresSelection,
     ) : ViewModelProvider.Factory {
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return HomeViewModel(appContext, retrogradeDb, coresSelection) as T
-        }
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            HomeViewModel(appContext, retrogradeDb, coresSelection) as T
     }
 
     /** A group of games rendered as a single section in the grouped grid. */
     sealed interface Section {
         val games: List<Game>
 
-        data class Favorites(override val games: List<Game>) : Section
+        data class Favorites(
+            override val games: List<Game>,
+        ) : Section
 
-        data class System(val metaSystem: MetaSystemID, override val games: List<Game>) : Section
+        data class System(
+            val metaSystem: MetaSystemID,
+            override val games: List<Game>,
+        ) : Section
     }
 
     data class UIState(
@@ -72,9 +76,7 @@ class HomeViewModel(
     private val searchQueryState = MutableStateFlow("")
     private val uiStates = MutableStateFlow(UIState())
 
-    fun getViewStates(): Flow<UIState> {
-        return uiStates
-    }
+    fun getViewStates(): Flow<UIState> = uiStates
 
     fun changeSearchQuery(query: String) {
         searchQueryState.value = query
@@ -104,15 +106,14 @@ class HomeViewModel(
         indexInProgress: Boolean,
         showMicrophoneCard: Boolean,
         showDesmumeWarning: Boolean,
-    ): UIState {
-        return UIState(
+    ): UIState =
+        UIState(
             sections = buildSections(allGames, searchQuery),
             indexInProgress = indexInProgress,
             showNoMicrophonePermissionCard = showMicrophoneCard,
             showNoGamesCard = allGames.isEmpty(),
             showDesmumeDeprecatedCard = showDesmumeWarning,
         )
-    }
 
     private fun buildSections(
         allGames: List<Game>,
@@ -164,20 +165,20 @@ class HomeViewModel(
     private fun indexingInProgress(appContext: Context) =
         PendingOperationsMonitor(appContext).anyLibraryOperationInProgress()
 
-    private fun dsGamesCount(retrogradeDb: RetrogradeDatabase): Flow<Int> {
-        return retrogradeDb.gameDao().selectSystemsWithCount()
+    private fun dsGamesCount(retrogradeDb: RetrogradeDatabase): Flow<Int> =
+        retrogradeDb
+            .gameDao()
+            .selectSystemsWithCount()
             .map { systems ->
                 systems
                     .firstOrNull { it.systemId == SystemID.NDS.dbname }
                     ?.count
                     ?: 0
-            }
-            .distinctUntilChanged()
-    }
+            }.distinctUntilChanged()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun microphoneNotification(db: RetrogradeDatabase): Flow<Boolean> {
-        return microphonePermissionEnabledState
+    private fun microphoneNotification(db: RetrogradeDatabase): Flow<Boolean> =
+        microphonePermissionEnabledState
             .flatMapLatest { isMicrophoneEnabled ->
                 if (isMicrophoneEnabled) {
                     flowOf(false)
@@ -189,14 +190,12 @@ class HomeViewModel(
                         cores.any { it.coreConfig.supportsMicrophone } &&
                             dsCount > 0
                     }
-                }
-                    .distinctUntilChanged()
+                }.distinctUntilChanged()
             }
-    }
 
-    private fun desmumeWarningNotification(): Flow<Boolean> {
-        return coresSelection.getSelectedCores()
+    private fun desmumeWarningNotification(): Flow<Boolean> =
+        coresSelection
+            .getSelectedCores()
             .map { cores -> cores.any { it.coreConfig.coreID == CoreID.DESMUME } }
             .distinctUntilChanged()
-    }
 }

@@ -42,7 +42,8 @@ class RumbleManager(
             return
         }
 
-        inputDeviceManager.getEnabledInputsObservable()
+        inputDeviceManager
+            .getEnabledInputsObservable()
             .map { getVibrators(it) }
             .flatMapLatest { vibrators ->
                 rumbleEventsObservable
@@ -50,8 +51,7 @@ class RumbleManager(
                     .onStart { stopAllVibrators(vibrators) }
                     .onCompletion { stopAllVibrators(vibrators) }
                     .flowOn(rumbleContext)
-            }
-            .safeCollect { }
+            }.safeCollect { }
     }
 
     private fun stopAllVibrators(vibrators: List<Vibrator>) {

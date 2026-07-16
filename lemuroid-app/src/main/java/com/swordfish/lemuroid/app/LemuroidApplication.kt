@@ -18,7 +18,10 @@ import dagger.android.DispatchingAndroidInjector
 import dagger.android.support.DaggerApplication
 import javax.inject.Inject
 
-class LemuroidApplication : DaggerApplication(), HasWorkerInjector, ImageLoaderFactory {
+class LemuroidApplication :
+    DaggerApplication(),
+    HasWorkerInjector,
+    ImageLoaderFactory {
     @Inject
     lateinit var workerInjector: DispatchingAndroidInjector<ListenableWorker>
 
@@ -43,13 +46,10 @@ class LemuroidApplication : DaggerApplication(), HasWorkerInjector, ImageLoaderF
         ContextHandler.attachBaseContext(base)
     }
 
-    override fun applicationInjector(): AndroidInjector<out DaggerApplication> {
-        return DaggerLemuroidApplicationComponent.builder().create(this)
-    }
+    override fun applicationInjector(): AndroidInjector<out DaggerApplication> =
+        DaggerLemuroidApplicationComponent.builder().create(this)
 
     override fun workerInjector(): AndroidInjector<ListenableWorker> = workerInjector
 
-    override fun newImageLoader(): ImageLoader {
-        return CoverUtils.buildImageLoader(applicationContext)
-    }
+    override fun newImageLoader(): ImageLoader = CoverUtils.buildImageLoader(applicationContext)
 }

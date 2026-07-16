@@ -17,9 +17,7 @@ object MathUtils {
         x2: Float,
         y1: Float,
         y2: Float,
-    ): Float {
-        return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2))
-    }
+    ): Float = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2))
 
     fun convertPolarCoordinatesToSquares(
         angle: Float,

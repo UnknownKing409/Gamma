@@ -22,7 +22,8 @@ fun BaseGameScreen(
     gameScreen: @Composable (BaseGameScreenViewModel) -> Unit,
 ) {
     val gameState =
-        viewModel.getGameState()
+        viewModel
+            .getGameState()
             .collectAsState(GameViewModelRetroGameView.GameState.Uninitialized)
             .value
 

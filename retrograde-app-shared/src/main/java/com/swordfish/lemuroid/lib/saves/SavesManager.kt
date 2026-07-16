@@ -10,12 +10,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
-class SavesManager(private val directoriesManager: DirectoriesManager) {
+class SavesManager(
+    private val directoriesManager: DirectoriesManager,
+) {
     suspend fun getSaveRAM(
         game: Game,
         systemCoreConfig: SystemCoreConfig,
-    ): ByteArray? {
-        return withContext(Dispatchers.IO) {
+    ): ByteArray? =
+        withContext(Dispatchers.IO) {
             val result =
                 runCatchingWithRetry(FILE_ACCESS_RETRIES) {
                     val saveFile = getSaveFile(getSaveRAMFileName(game))
@@ -28,7 +30,6 @@ class SavesManager(private val directoriesManager: DirectoriesManager) {
                 }
             result.getOrNull()
         }
-    }
 
     suspend fun setSaveRAM(
         game: Game,
@@ -48,20 +49,18 @@ class SavesManager(private val directoriesManager: DirectoriesManager) {
         }
     }
 
-    suspend fun getSaveRAMInfo(game: Game): SaveInfo {
-        return withContext(Dispatchers.IO) {
+    suspend fun getSaveRAMInfo(game: Game): SaveInfo =
+        withContext(Dispatchers.IO) {
             val saveFile = getSaveFile(getSaveRAMFileName(game))
             val fileExists = saveFile.exists() && saveFile.length() > 0
             SaveInfo(fileExists, saveFile.lastModified())
         }
-    }
 
-    private suspend fun getSaveFile(fileName: String): File {
-        return withContext(Dispatchers.IO) {
+    private suspend fun getSaveFile(fileName: String): File =
+        withContext(Dispatchers.IO) {
             val savesDirectory = directoriesManager.getSavesDirectory()
             File(savesDirectory, fileName)
         }
-    }
 
     /** This name should make it compatible with RetroArch so that users can freely sync saves across the two application. */
     private fun getSaveRAMFileName(game: Game) = "${game.fileName.substringBeforeLast(".")}.srm"

@@ -59,9 +59,8 @@ class LocalStorageProvider(
     override fun listBaseStorageFiles(): Flow<List<BaseStorageFile>> =
         walkDirectory(getExternalFolder() ?: directoriesManager.getInternalRomsDirectory())
 
-    override fun getStorageFile(baseStorageFile: BaseStorageFile): StorageFile? {
-        return DocumentFileParser.parseDocumentFile(context, baseStorageFile)
-    }
+    override fun getStorageFile(baseStorageFile: BaseStorageFile): StorageFile? =
+        DocumentFileParser.parseDocumentFile(context, baseStorageFile)
 
     override fun getGameArtUri(gameFileUri: Uri): Uri? {
         val gameFile = gameFileUri.path?.let { File(it) } ?: return null
@@ -103,7 +102,8 @@ class LocalStorageProvider(
             while (directories.isNotEmpty()) {
                 val directory = directories.removeAt(0)
                 val groups =
-                    directory.listFiles()
+                    directory
+                        .listFiles()
                         ?.filterNot { it.name.startsWith(".") }
                         ?.groupBy { it.isDirectory } ?: mapOf()
 
@@ -146,13 +146,9 @@ class LocalStorageProvider(
         game: Game,
         dataFiles: List<DataFile>,
         allowVirtualFiles: Boolean,
-    ): RomFiles {
-        return RomFiles.Standard(listOf(getGameRom(game)) + dataFiles.map { getDataFile(it) })
-    }
+    ): RomFiles = RomFiles.Standard(listOf(getGameRom(game)) + dataFiles.map { getDataFile(it) })
 
-    override fun getInputStream(uri: Uri): InputStream {
-        return File(uri.path).inputStream()
-    }
+    override fun getInputStream(uri: Uri): InputStream = File(uri.path).inputStream()
 
     companion object {
         const val LOCAL_STORAGE_CACHE_SUBFOLDER = "local-storage-games"

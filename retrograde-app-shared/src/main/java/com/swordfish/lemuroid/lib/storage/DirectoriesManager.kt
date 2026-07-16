@@ -3,7 +3,9 @@ package com.swordfish.lemuroid.lib.storage
 import android.content.Context
 import java.io.File
 
-class DirectoriesManager(private val appContext: Context) {
+class DirectoriesManager(
+    private val appContext: Context,
+) {
     @Deprecated("Use the external states directory")
     fun getInternalStatesDirectory(): File =
         File(appContext.filesDir, "states").apply {

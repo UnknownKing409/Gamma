@@ -1,6 +1,8 @@
 package com.swordfish.lemuroid.lib.library
 
-enum class SystemID(val dbname: String) {
+enum class SystemID(
+    val dbname: String,
+) {
     NES("nes"),
     SNES("snes"),
     GENESIS("md"),

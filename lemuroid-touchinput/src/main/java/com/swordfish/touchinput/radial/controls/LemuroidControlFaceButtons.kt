@@ -15,8 +15,7 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 
-context(PadKitScope)
-@Composable
+context(PadKitScope) @Composable
 fun LemuroidControlFaceButtons(
     modifier: Modifier = Modifier,
     rotationInDegrees: Float = 0f,
@@ -42,8 +41,7 @@ fun LemuroidControlFaceButtons(
     )
 }
 
-context(PadKitScope)
-@Composable
+context(PadKitScope) @Composable
 fun LemuroidControlFaceButtons(
     modifier: Modifier = Modifier,
     primaryAnchors: PersistentList<Anchor<Id.Key>>,
