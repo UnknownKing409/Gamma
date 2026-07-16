@@ -57,6 +57,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.swordfish.lemuroid.app.shared.game.BaseGameScreenViewModel
+import com.swordfish.lemuroid.app.shared.game.viewmodel.GameViewModelTouchControls
 import com.swordfish.lemuroid.app.shared.game.viewmodel.GameViewModelTouchControls.Companion.MENU_LOADING_ANIMATION_MILLIS
 import com.swordfish.lemuroid.app.shared.settings.HapticFeedbackMode
 import com.swordfish.lemuroid.lib.controller.ControllerConfig
@@ -99,7 +100,10 @@ fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
         val touchControllerSettings = touchControllerSettingsState.value
         val currentControllerConfig = controllerConfigState.value
 
-        val activeSkinState = viewModel.getActiveSkin().collectAsState(null)
+        val skinUiState =
+            viewModel
+                .getSkinState()
+                .collectAsState(GameViewModelTouchControls.SkinUiState.None)
 
         val tiltConfiguration = viewModel.getTiltConfiguration().collectAsState(TiltConfiguration.Disabled)
         val tiltSimulatedStates = viewModel.getSimulatedTiltEvents().collectAsState(InputState())
@@ -160,30 +164,35 @@ fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
                 gameView.viewport = viewport
             }
 
-            val activeSkin = activeSkinState.value
+            val skinState = skinUiState.value
 
-            if (activeSkin != null && touchControlsVisibleState.value) {
-                val assetLoader = remember { DeltaSkinAssetLoader() }
-                DeltaSkinOverlay(
-                    skinDir = activeSkin.directory,
-                    representation = activeSkin.representation,
-                    isLandscape = activeSkin.isLandscape,
-                    assetLoader = assetLoader,
-                    onGameScreenRect = { rect -> viewportPosition.value = rect },
-                    onButton = { keyCodes, pressed -> viewModel.sendSkinButton(keyCodes, pressed) },
-                    onMenu = { pressed -> viewModel.sendSkinMenu(pressed) },
-                    onMotion = { source, x, y -> viewModel.sendSkinMotion(source, x, y) },
-                )
+            // A skin is selected: never draw the default controls (not even while it loads).
+            if (touchControlsVisibleState.value && skinState !is GameViewModelTouchControls.SkinUiState.None) {
+                if (skinState is GameViewModelTouchControls.SkinUiState.Active) {
+                    val activeSkin = skinState.skin
+                    val assetLoader = remember { DeltaSkinAssetLoader(localContext.cacheDir) }
+                    DeltaSkinOverlay(
+                        skinDir = activeSkin.directory,
+                        representation = activeSkin.representation,
+                        isLandscape = activeSkin.isLandscape,
+                        assetLoader = assetLoader,
+                        onGameScreenRect = { rect -> viewportPosition.value = rect },
+                        onButton = { keyCodes, pressed -> viewModel.sendSkinButton(keyCodes, pressed) },
+                        onMenu = { pressed -> viewModel.sendSkinMenu(pressed) },
+                        onMotion = { source, x, y -> viewModel.sendSkinMotion(source, x, y) },
+                    )
 
-                val hasMenuItem =
-                    remember(activeSkin.representation) {
-                        activeSkin.representation.items.any {
-                            DeltaSkinInputMapping.classify(it) is DeltaSkinInputMapping.Control.Menu
+                    val hasMenuItem =
+                        remember(activeSkin.representation) {
+                            activeSkin.representation.items.any {
+                                DeltaSkinInputMapping.classify(it) is DeltaSkinInputMapping.Control.Menu
+                            }
                         }
+                    if (!hasMenuItem) {
+                        SkinFallbackMenuButton(onMenu = { pressed -> viewModel.sendSkinMenu(pressed) })
                     }
-                if (!hasMenuItem) {
-                    SkinFallbackMenuButton(onMenu = { pressed -> viewModel.sendSkinMenu(pressed) })
                 }
+                // SkinUiState.Loading renders nothing so the default controls stay hidden.
                 return@PadKit
             }
 

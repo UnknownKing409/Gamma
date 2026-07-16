@@ -31,12 +31,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -132,34 +135,65 @@ class GameViewModelTouchControls(
             .distinctUntilChanged()
 
     /**
-     * The controller skin to render for the current orientation, or null when the slot is set to the
-     * default (PadKit) controls. Recomputed whenever the orientation or the stored selection changes.
+     * Rendering state for the current (system, orientation) slot. [Loading] is emitted as soon as we
+     * know a skin is selected but before it has been parsed, so the default (PadKit) controls can be
+     * hidden immediately instead of flashing while the skin loads.
      */
-    fun getActiveSkin(): Flow<ActiveSkin?> {
-        return screenOrientation
+    sealed interface SkinUiState {
+        data object None : SkinUiState
+
+        data object Loading : SkinUiState
+
+        data class Active(val skin: ActiveSkin) : SkinUiState
+    }
+
+    private val skinState: StateFlow<SkinUiState> =
+        screenOrientation
             .flatMapLatest { orientation ->
                 controllerSkinPreferences
                     .observeSelectedSkinId(systemID, orientation)
                     .map { skinId -> skinId to orientation }
             }
             .distinctUntilChanged()
-            .mapLatest { (skinId, orientation) ->
-                if (skinId == null) return@mapLatest null
-                val handle = deltaSkinManager.loadHandle(skinId) ?: return@mapLatest null
-                val orientationName =
-                    when (orientation) {
-                        TouchControllerSettingsManager.Orientation.LANDSCAPE -> "landscape"
-                        TouchControllerSettingsManager.Orientation.PORTRAIT -> "portrait"
+            .flatMapLatest { (skinId, orientation) ->
+                flow {
+                    if (skinId == null) {
+                        emit(SkinUiState.None)
+                        return@flow
                     }
-                val representation =
-                    deltaSkinManager.resolveRepresentation(handle.info, isTablet, orientationName)
-                        ?: return@mapLatest null
-                ActiveSkin(
-                    directory = handle.directory,
-                    representation = representation,
-                    isLandscape = orientation == TouchControllerSettingsManager.Orientation.LANDSCAPE,
-                )
+                    emit(SkinUiState.Loading)
+                    emit(resolveSkinState(skinId, orientation))
+                }
             }
+            .stateIn(scope, SharingStarted.Eagerly, computeInitialSkinState())
+
+    fun getSkinState(): StateFlow<SkinUiState> = skinState
+
+    private suspend fun resolveSkinState(
+        skinId: String,
+        orientation: TouchControllerSettingsManager.Orientation,
+    ): SkinUiState {
+        val handle = deltaSkinManager.loadHandle(skinId) ?: return SkinUiState.None
+        val orientationName =
+            when (orientation) {
+                TouchControllerSettingsManager.Orientation.LANDSCAPE -> "landscape"
+                TouchControllerSettingsManager.Orientation.PORTRAIT -> "portrait"
+            }
+        val representation =
+            deltaSkinManager.resolveRepresentation(handle.info, isTablet, orientationName)
+                ?: return SkinUiState.None
+        return SkinUiState.Active(
+            ActiveSkin(
+                directory = handle.directory,
+                representation = representation,
+                isLandscape = orientation == TouchControllerSettingsManager.Orientation.LANDSCAPE,
+            ),
+        )
+    }
+
+    private fun computeInitialSkinState(): SkinUiState {
+        val skinId = controllerSkinPreferences.getSelectedSkinId(systemID, screenOrientation.value)
+        return if (skinId != null) SkinUiState.Loading else SkinUiState.None
     }
 
     /** Presses/releases regular skin buttons (menu keycode is routed to the in-game menu). */
@@ -169,15 +203,19 @@ class GameViewModelTouchControls(
     ) {
         keyCodes.forEach { keyCode ->
             if (keyCode == DeltaSkinInputMapping.MENU_KEYCODE) {
-                onMenuPressed(pressed)
+                sendSkinMenu(pressed)
             } else {
                 handleButton(keyCode, pressed)
             }
         }
     }
 
+    /** Opens the in-game menu immediately on press (skins don't require the press-and-hold delay). */
     fun sendSkinMenu(pressed: Boolean) {
-        onMenuPressed(pressed)
+        menuPressed.value = pressed
+        if (pressed) {
+            sideEffects.showMenu(tilt, inputs)
+        }
     }
 
     fun sendSkinMotion(

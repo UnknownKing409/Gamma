@@ -13,11 +13,18 @@ import timber.log.Timber
 import java.io.File
 
 /**
- * Loads and rasterises Delta skin background assets (PDF or PNG) into bitmaps, caching the result so a
- * given asset is only decoded once per target size. PDF assets are rendered with [PdfRenderer], which
- * is not thread-safe, so all PDF work is serialised behind a [Mutex].
+ * Loads and rasterises Delta skin background assets (PDF or PNG) into bitmaps.
+ *
+ * Two caching tiers keep this fast:
+ * - an in-memory [LruCache], process-wide, so an asset is decoded once per session; and
+ * - a persistent PNG disk cache under [cacheDir], so the (expensive) PDF rasterisation survives across
+ *   game launches. The emulator runs in its own short-lived process, so without the disk cache every
+ *   launch would re-render the vector PDF from scratch.
+ *
+ * PDF assets are rendered with [PdfRenderer], which is not thread-safe, so all PDF work is serialised
+ * behind a [Mutex].
  */
-class DeltaSkinAssetLoader {
+class DeltaSkinAssetLoader(private val cacheDir: File) {
     suspend fun loadBitmap(
         skinDir: File,
         assetName: String,
@@ -26,10 +33,18 @@ class DeltaSkinAssetLoader {
     ): Bitmap? {
         if (targetWidthPx <= 0 || targetHeightPx <= 0) return null
 
-        val key = "${skinDir.absolutePath}/$assetName@${targetWidthPx}x$targetHeightPx"
-        cache.get(key)?.let { return it }
+        val key = "${skinDir.name}/$assetName@${targetWidthPx}x$targetHeightPx"
+        memoryCache.get(key)?.let { return it }
 
         return withContext(Dispatchers.IO) {
+            val diskFile = File(diskCacheDir(), diskFileName(key))
+            if (diskFile.exists()) {
+                BitmapFactory.decodeFile(diskFile.absolutePath)?.let { cached ->
+                    memoryCache.put(key, cached)
+                    return@withContext cached
+                }
+            }
+
             val file = File(skinDir, assetName)
             if (!file.exists()) {
                 Timber.w("Delta skin asset not found: %s", file.absolutePath)
@@ -46,8 +61,27 @@ class DeltaSkinAssetLoader {
                 }.onFailure { Timber.e(it, "Failed to load skin asset %s", assetName) }
                     .getOrNull()
 
-            bitmap?.also { cache.put(key, it) }
+            bitmap?.also {
+                memoryCache.put(key, it)
+                writeToDisk(it, diskFile)
+            }
         }
+    }
+
+    private fun diskCacheDir(): File = File(cacheDir, DISK_CACHE_SUBFOLDER).apply { mkdirs() }
+
+    private fun diskFileName(key: String): String = "${key.hashCode().toUInt().toString(16)}.png"
+
+    private fun writeToDisk(
+        bitmap: Bitmap,
+        target: File,
+    ) {
+        runCatching {
+            // Write to a temp file then rename, so a crash mid-write can't leave a corrupt cache entry.
+            val tmp = File(target.parentFile, "${target.name}.tmp")
+            tmp.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            tmp.renameTo(target)
+        }.onFailure { Timber.w(it, "Failed to write skin asset to disk cache") }
     }
 
     private fun decodePng(
@@ -82,10 +116,12 @@ class DeltaSkinAssetLoader {
         }
 
     companion object {
+        private const val DISK_CACHE_SUBFOLDER = "skin-cache"
+
         private val pdfMutex = Mutex()
 
         // Process-wide cache so bitmaps survive recomposition and orientation changes.
-        private val cache: LruCache<String, Bitmap> =
+        private val memoryCache: LruCache<String, Bitmap> =
             object : LruCache<String, Bitmap>((Runtime.getRuntime().maxMemory() / 8).toInt()) {
                 override fun sizeOf(
                     key: String,

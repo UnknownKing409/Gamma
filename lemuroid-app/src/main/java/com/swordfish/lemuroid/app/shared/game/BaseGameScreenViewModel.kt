@@ -218,8 +218,8 @@ class BaseGameScreenViewModel(
 
     fun getTouchControllerConfig(): Flow<ControllerConfig> = touchControls.getTouchControllerConfig()
 
-    fun getActiveSkin(): Flow<GameViewModelTouchControls.ActiveSkin?> {
-        return touchControls.getActiveSkin()
+    fun getSkinState(): Flow<GameViewModelTouchControls.SkinUiState> {
+        return touchControls.getSkinState()
     }
 
     fun sendSkinButton(
