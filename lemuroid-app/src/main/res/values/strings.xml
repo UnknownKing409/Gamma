@@ -43,6 +43,18 @@
     <string name="settings_title_gamepad_settings">External devices</string>
     <string name="settings_description_gamepad_settings">Configure external gamepads and keyboards</string>
 
+    <string name="settings_title_controller_skins">Controller skins</string>
+    <string name="settings_description_controller_skins">Use Delta-compatible touch controller skins</string>
+    <string name="controller_skins_manage">Manage skins</string>
+    <string name="controller_skins_import">Import skin</string>
+    <string name="controller_skins_import_description">Select a .deltaskin file to install</string>
+    <string name="controller_skins_by_system">By system</string>
+    <string name="controller_skins_system_summary">Portrait: %1$s · Landscape: %2$s</string>
+    <string name="controller_skins_default">Default</string>
+    <string name="controller_skins_portrait">Portrait</string>
+    <string name="controller_skins_landscape">Landscape</string>
+    <string name="controller_skins_delete">Delete</string>
+
     <string name="settings_retropad_button_name">RetroPad %1$s</string>
 
     <string name="settings_gamepad_category_enabled">Enabled devices</string>

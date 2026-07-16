@@ -130,6 +130,13 @@ private fun InputSettings(navController: NavController) {
             },
             onClick = { navController.navigateToRoute(MainRoute.SETTINGS_INPUT_DEVICES) },
         )
+        LemuroidSettingsMenuLink(
+            title = { Text(text = stringResource(id = R.string.settings_title_controller_skins)) },
+            subtitle = {
+                Text(text = stringResource(id = R.string.settings_description_controller_skins))
+            },
+            onClick = { navController.navigateToRoute(MainRoute.SETTINGS_CONTROLLER_SKINS) },
+        )
     }
 }
 

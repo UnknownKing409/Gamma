@@ -41,4 +41,9 @@ class DirectoriesManager(
         File(appContext.getExternalFilesDir(null), "roms").apply {
             mkdirs()
         }
+
+    fun getSkinsDirectory(): File =
+        File(appContext.getExternalFilesDir(null), "skins").apply {
+            mkdirs()
+        }
 }

@@ -40,6 +40,10 @@ import com.swordfish.lemuroid.app.mobile.feature.settings.inputdevices.InputDevi
 import com.swordfish.lemuroid.app.mobile.feature.settings.inputdevices.InputDevicesSettingsViewModel
 import com.swordfish.lemuroid.app.mobile.feature.settings.savesync.SaveSyncSettingsScreen
 import com.swordfish.lemuroid.app.mobile.feature.settings.savesync.SaveSyncSettingsViewModel
+import com.swordfish.lemuroid.app.mobile.feature.settings.skins.ControllerSkinsScreen
+import com.swordfish.lemuroid.app.mobile.feature.settings.skins.ControllerSkinsViewModel
+import com.swordfish.lemuroid.app.mobile.feature.settings.skins.SystemSkinScreen
+import com.swordfish.lemuroid.app.mobile.feature.settings.skins.SystemSkinViewModel
 import com.swordfish.lemuroid.app.mobile.feature.shortcuts.ShortcutsGenerator
 import com.swordfish.lemuroid.app.mobile.shared.compose.ui.AppTheme
 import com.swordfish.lemuroid.app.shared.GameInteractor
@@ -58,6 +62,8 @@ import com.swordfish.lemuroid.lib.injection.PerActivity
 import com.swordfish.lemuroid.lib.library.LemuroidLibrary
 import com.swordfish.lemuroid.lib.library.db.RetrogradeDatabase
 import com.swordfish.lemuroid.lib.library.db.entity.Game
+import com.swordfish.lemuroid.lib.library.skin.ControllerSkinPreferences
+import com.swordfish.lemuroid.lib.library.skin.DeltaSkinManager
 import com.swordfish.lemuroid.lib.preferences.SharedPreferencesHelper
 import com.swordfish.lemuroid.lib.savesync.SaveSyncManager
 import com.swordfish.lemuroid.lib.storage.DirectoriesManager
@@ -93,6 +99,12 @@ class MainActivity :
 
     @Inject
     lateinit var inputDeviceManager: InputDeviceManager
+
+    @Inject
+    lateinit var deltaSkinManager: DeltaSkinManager
+
+    @Inject
+    lateinit var controllerSkinPreferences: ControllerSkinPreferences
 
     private val reviewManager = ReviewManager()
 
@@ -286,6 +298,35 @@ class MainActivity :
                                         SaveSyncSettingsViewModel.Factory(
                                             application,
                                             saveSyncManager,
+                                        ),
+                                ),
+                        )
+                    }
+                    composable(MainRoute.SETTINGS_CONTROLLER_SKINS) {
+                        ControllerSkinsScreen(
+                            modifier = Modifier.padding(padding),
+                            viewModel =
+                                viewModel(
+                                    factory =
+                                        ControllerSkinsViewModel.Factory(
+                                            deltaSkinManager,
+                                            controllerSkinPreferences,
+                                        ),
+                                ),
+                            navController = navController,
+                        )
+                    }
+                    composable(MainRoute.SETTINGS_CONTROLLER_SKIN_SYSTEM) { backStackEntry ->
+                        val systemId = backStackEntry.arguments?.getString(ARG_SYSTEM_ID)
+                        SystemSkinScreen(
+                            modifier = Modifier.padding(padding),
+                            viewModel =
+                                viewModel(
+                                    factory =
+                                        SystemSkinViewModel.Factory(
+                                            deltaSkinManager,
+                                            controllerSkinPreferences,
+                                            systemId,
                                         ),
                                 ),
                         )

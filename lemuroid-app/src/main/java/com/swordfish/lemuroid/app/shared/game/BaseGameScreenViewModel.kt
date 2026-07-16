@@ -30,9 +30,12 @@ import com.swordfish.lemuroid.lib.game.GameLoader
 import com.swordfish.lemuroid.lib.library.GameSystem
 import com.swordfish.lemuroid.lib.library.SystemCoreConfig
 import com.swordfish.lemuroid.lib.library.db.entity.Game
+import com.swordfish.lemuroid.lib.library.skin.ControllerSkinPreferences
+import com.swordfish.lemuroid.lib.library.skin.DeltaSkinManager
 import com.swordfish.lemuroid.lib.saves.SavesManager
 import com.swordfish.lemuroid.lib.saves.StatesManager
 import com.swordfish.lemuroid.lib.saves.StatesPreviewManager
+import com.swordfish.lemuroid.lib.storage.DirectoriesManager
 import com.swordfish.libretrodroid.GLRetroView
 import com.swordfish.touchinput.radial.sensors.TiltConfiguration
 import com.swordfish.touchinput.radial.settings.TouchControllerSettingsManager
@@ -127,6 +130,10 @@ class BaseGameScreenViewModel(
             tilt,
             sideEffects,
             viewModelScope,
+            system.id,
+            DeltaSkinManager(appContext, DirectoriesManager(appContext)),
+            ControllerSkinPreferences(sharedPreferences),
+            appContext.resources.configuration.smallestScreenWidthDp >= TABLET_SMALLEST_WIDTH_DP,
         )
     private val saves =
         GameViewModelSaves(
@@ -210,6 +217,29 @@ class BaseGameScreenViewModel(
     fun isTouchControllerVisible(): Flow<Boolean> = touchControls.isTouchControllerVisible()
 
     fun getTouchControllerConfig(): Flow<ControllerConfig> = touchControls.getTouchControllerConfig()
+
+    fun getActiveSkin(): Flow<GameViewModelTouchControls.ActiveSkin?> {
+        return touchControls.getActiveSkin()
+    }
+
+    fun sendSkinButton(
+        keyCodes: List<Int>,
+        pressed: Boolean,
+    ) {
+        touchControls.sendSkinButton(keyCodes, pressed)
+    }
+
+    fun sendSkinMenu(pressed: Boolean) {
+        touchControls.sendSkinMenu(pressed)
+    }
+
+    fun sendSkinMotion(
+        source: Int,
+        xAxis: Float,
+        yAxis: Float,
+    ) {
+        touchControls.sendSkinMotion(source, xAxis, yAxis)
+    }
 
     fun changeTiltConfiguration(tiltConfig: TiltConfiguration) {
         tilt.changeTiltConfiguration(tiltConfig)
@@ -302,4 +332,8 @@ class BaseGameScreenViewModel(
     ): Boolean = inputs.sendKeyEvent(keyCode, event)
 
     fun sendMotionEvent(event: MotionEvent): Boolean = inputs.sendMotionEvent(event)
+
+    companion object {
+        private const val TABLET_SMALLEST_WIDTH_DP = 600
+    }
 }

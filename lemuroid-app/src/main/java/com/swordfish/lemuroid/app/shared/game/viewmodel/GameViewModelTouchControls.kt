@@ -11,10 +11,15 @@ import com.swordfish.lemuroid.app.shared.settings.HapticFeedbackMode
 import com.swordfish.lemuroid.common.coroutines.launchOnState
 import com.swordfish.lemuroid.common.coroutines.safeCollect
 import com.swordfish.lemuroid.lib.controller.ControllerConfig
+import com.swordfish.lemuroid.lib.library.SystemID
+import com.swordfish.lemuroid.lib.library.skin.ControllerSkinPreferences
+import com.swordfish.lemuroid.lib.library.skin.DeltaSkinManager
 import com.swordfish.libretrodroid.GLRetroView
 import com.swordfish.libretrodroid.GLRetroView.Companion.MOTION_SOURCE_ANALOG_LEFT
 import com.swordfish.libretrodroid.GLRetroView.Companion.MOTION_SOURCE_ANALOG_RIGHT
 import com.swordfish.libretrodroid.GLRetroView.Companion.MOTION_SOURCE_DPAD
+import com.swordfish.touchinput.deltaskin.DeltaSkinInputMapping
+import com.swordfish.touchinput.deltaskin.DeltaSkinRepresentation
 import com.swordfish.touchinput.radial.layouts.shared.ComposeTouchLayouts
 import com.swordfish.touchinput.radial.settings.TouchControllerID
 import com.swordfish.touchinput.radial.settings.TouchControllerSettingsManager
@@ -31,8 +36,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GameViewModelTouchControls(
@@ -43,7 +50,17 @@ class GameViewModelTouchControls(
     private val tilt: GameViewModelTilt,
     private val sideEffects: GameViewModelSideEffects,
     private val scope: CoroutineScope,
+    private val systemID: SystemID,
+    private val deltaSkinManager: DeltaSkinManager,
+    private val controllerSkinPreferences: ControllerSkinPreferences,
+    private val isTablet: Boolean,
 ) : DefaultLifecycleObserver {
+    /** A resolved skin ready to render for the current orientation. */
+    data class ActiveSkin(
+        val directory: File,
+        val representation: DeltaSkinRepresentation,
+        val isLandscape: Boolean,
+    )
     private val touchControlId = MutableStateFlow(TouchControllerID.GB)
     private val screenOrientation = MutableStateFlow(TouchControllerSettingsManager.Orientation.PORTRAIT)
     private val menuPressed = MutableStateFlow(false)
@@ -114,6 +131,63 @@ class GameViewModelTouchControls(
             .filterNotNull()
             .distinctUntilChanged()
 
+    /**
+     * The controller skin to render for the current orientation, or null when the slot is set to the
+     * default (PadKit) controls. Recomputed whenever the orientation or the stored selection changes.
+     */
+    fun getActiveSkin(): Flow<ActiveSkin?> {
+        return screenOrientation
+            .flatMapLatest { orientation ->
+                controllerSkinPreferences
+                    .observeSelectedSkinId(systemID, orientation)
+                    .map { skinId -> skinId to orientation }
+            }
+            .distinctUntilChanged()
+            .mapLatest { (skinId, orientation) ->
+                if (skinId == null) return@mapLatest null
+                val handle = deltaSkinManager.loadHandle(skinId) ?: return@mapLatest null
+                val orientationName =
+                    when (orientation) {
+                        TouchControllerSettingsManager.Orientation.LANDSCAPE -> "landscape"
+                        TouchControllerSettingsManager.Orientation.PORTRAIT -> "portrait"
+                    }
+                val representation =
+                    deltaSkinManager.resolveRepresentation(handle.info, isTablet, orientationName)
+                        ?: return@mapLatest null
+                ActiveSkin(
+                    directory = handle.directory,
+                    representation = representation,
+                    isLandscape = orientation == TouchControllerSettingsManager.Orientation.LANDSCAPE,
+                )
+            }
+    }
+
+    /** Presses/releases regular skin buttons (menu keycode is routed to the in-game menu). */
+    fun sendSkinButton(
+        keyCodes: List<Int>,
+        pressed: Boolean,
+    ) {
+        keyCodes.forEach { keyCode ->
+            if (keyCode == DeltaSkinInputMapping.MENU_KEYCODE) {
+                onMenuPressed(pressed)
+            } else {
+                handleButton(keyCode, pressed)
+            }
+        }
+    }
+
+    fun sendSkinMenu(pressed: Boolean) {
+        onMenuPressed(pressed)
+    }
+
+    fun sendSkinMotion(
+        source: Int,
+        xAxis: Float,
+        yAxis: Float,
+    ) {
+        handleVirtualInputDirection(source, xAxis, yAxis)
+    }
+
     fun handleVirtualInputEvent(events: List<InputEvent>) {
         val menuEvent = events.firstOrNull { it is InputEvent.Button && it.id == KeyEvent.KEYCODE_BUTTON_MODE }
         if (menuEvent != null) {
@@ -162,8 +236,15 @@ class GameViewModelTouchControls(
     }
 
     private fun handleVirtualInputButton(event: InputEvent.Button) {
-        val action = if (event.pressed) KeyEvent.ACTION_DOWN else KeyEvent.ACTION_UP
-        retroGameView.retroGameView?.sendKeyEvent(action, event.id)
+        handleButton(event.id, event.pressed)
+    }
+
+    private fun handleButton(
+        id: Int,
+        pressed: Boolean,
+    ) {
+        val action = if (pressed) KeyEvent.ACTION_DOWN else KeyEvent.ACTION_UP
+        retroGameView.retroGameView?.sendKeyEvent(action, id)
     }
 
     private fun handleVirtualInputDirection(
