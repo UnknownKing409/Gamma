@@ -3,14 +3,12 @@ package com.swordfish.lemuroid.app.mobile.feature.home
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.swordfish.lemuroid.app.shared.library.PendingOperationsMonitor
 import com.swordfish.lemuroid.app.shared.settings.StorageFrameworkPickerLauncher
-import com.swordfish.lemuroid.common.coroutines.combine
 import com.swordfish.lemuroid.lib.core.CoresSelection
 import com.swordfish.lemuroid.lib.library.CoreID
 import com.swordfish.lemuroid.lib.library.GameSystem
@@ -65,14 +63,12 @@ class HomeViewModel(
     data class UIState(
         val sections: List<Section> = emptyList(),
         val indexInProgress: Boolean = true,
-        val showNoNotificationPermissionCard: Boolean = false,
         val showNoMicrophonePermissionCard: Boolean = false,
         val showNoGamesCard: Boolean = false,
         val showDesmumeDeprecatedCard: Boolean = false,
     )
 
     private val microphonePermissionEnabledState = MutableStateFlow(true)
-    private val notificationsPermissionEnabledState = MutableStateFlow(true)
     private val searchQueryState = MutableStateFlow("")
     private val uiStates = MutableStateFlow(UIState())
 
@@ -89,22 +85,7 @@ class HomeViewModel(
     }
 
     fun updatePermissions(context: Context) {
-        notificationsPermissionEnabledState.value = isNotificationsPermissionGranted(context)
         microphonePermissionEnabledState.value = isMicrophonePermissionGranted(context)
-    }
-
-    private fun isNotificationsPermissionGranted(context: Context): Boolean {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            return true
-        }
-
-        val permissionResult =
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS,
-            )
-
-        return permissionResult == PackageManager.PERMISSION_GRANTED
     }
 
     private fun isMicrophonePermissionGranted(context: Context): Boolean {
@@ -121,14 +102,12 @@ class HomeViewModel(
         allGames: List<Game>,
         searchQuery: String,
         indexInProgress: Boolean,
-        notificationsPermissionEnabled: Boolean,
         showMicrophoneCard: Boolean,
         showDesmumeWarning: Boolean,
     ): UIState {
         return UIState(
             sections = buildSections(allGames, searchQuery),
             indexInProgress = indexInProgress,
-            showNoNotificationPermissionCard = !notificationsPermissionEnabled,
             showNoMicrophonePermissionCard = showMicrophoneCard,
             showNoGamesCard = allGames.isEmpty(),
             showDesmumeDeprecatedCard = showDesmumeWarning,
@@ -170,7 +149,6 @@ class HomeViewModel(
                     retrogradeDb.gameDao().selectAll(),
                     searchQueryState,
                     indexingInProgress(appContext),
-                    notificationsPermissionEnabledState,
                     microphoneNotification(retrogradeDb),
                     desmumeWarningNotification(),
                     ::buildViewState,

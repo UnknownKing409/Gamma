@@ -1,7 +1,6 @@
 package com.swordfish.lemuroid.app.mobile.feature.home
 
 import android.Manifest
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -99,13 +98,6 @@ fun HomeScreen(
         onGameClick,
         onGameLongClick,
         onOpenCoreSelection,
-        {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                return@HomeScreen
-            }
-
-            permissionsLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        },
         { permissionsLauncher.launch(Manifest.permission.RECORD_AUDIO) },
         { viewModel.changeLocalStorageFolder(context) },
     )
@@ -133,7 +125,6 @@ private sealed interface GridEntry {
 }
 
 private enum class HomeNotificationType {
-    NOTIFICATIONS,
     NO_GAMES,
     MICROPHONE,
     DESMUME,
@@ -150,7 +141,6 @@ private fun HomeScreen(
     onGameClicked: (Game) -> Unit,
     onGameLongClick: (Game) -> Unit,
     onOpenCoreSelection: () -> Unit,
-    onEnableNotificationsClicked: () -> Unit,
     onEnableMicrophoneClicked: () -> Unit,
     onSetDirectoryClicked: () -> Unit,
 ) {
@@ -160,9 +150,6 @@ private fun HomeScreen(
         remember(state) {
             val entries = mutableListOf<GridEntry>()
 
-            if (state.showNoNotificationPermissionCard) {
-                entries += GridEntry.Notification(HomeNotificationType.NOTIFICATIONS)
-            }
             if (state.showNoGamesCard) {
                 entries += GridEntry.Notification(HomeNotificationType.NO_GAMES)
             }
@@ -233,7 +220,6 @@ private fun HomeScreen(
                         HomeNotificationCard(
                             notification = entry.notification,
                             indexInProgress = state.indexInProgress,
-                            onEnableNotificationsClicked = onEnableNotificationsClicked,
                             onEnableMicrophoneClicked = onEnableMicrophoneClicked,
                             onSetDirectoryClicked = onSetDirectoryClicked,
                             onOpenCoreSelection = onOpenCoreSelection,
@@ -445,19 +431,11 @@ private fun RailSelectionBubble(
 private fun HomeNotificationCard(
     notification: HomeNotificationType,
     indexInProgress: Boolean,
-    onEnableNotificationsClicked: () -> Unit,
     onEnableMicrophoneClicked: () -> Unit,
     onSetDirectoryClicked: () -> Unit,
     onOpenCoreSelection: () -> Unit,
 ) {
     when (notification) {
-        HomeNotificationType.NOTIFICATIONS ->
-            HomeNotification(
-                titleId = R.string.home_notification_title,
-                messageId = R.string.home_notification_message,
-                actionId = R.string.home_notification_action,
-                onAction = onEnableNotificationsClicked,
-            )
         HomeNotificationType.NO_GAMES ->
             HomeNotification(
                 titleId = R.string.home_empty_title,

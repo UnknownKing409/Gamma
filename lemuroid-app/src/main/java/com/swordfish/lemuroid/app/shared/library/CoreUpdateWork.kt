@@ -2,10 +2,7 @@ package com.swordfish.lemuroid.app.shared.library
 
 import android.content.Context
 import androidx.work.CoroutineWorker
-import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
-import com.swordfish.lemuroid.app.mobile.shared.NotificationsManager
-import com.swordfish.lemuroid.app.utils.android.createSyncForegroundInfo
 import com.swordfish.lemuroid.lib.core.CoreUpdater
 import com.swordfish.lemuroid.lib.core.CoresSelection
 import com.swordfish.lemuroid.lib.injection.AndroidWorkerInjection
@@ -36,16 +33,6 @@ class CoreUpdateWork(context: Context, workerParams: WorkerParameters) :
         AndroidWorkerInjection.inject(this)
 
         Timber.i("Starting core update/install work")
-
-        val notificationsManager = NotificationsManager(applicationContext)
-
-        val foregroundInfo =
-            createSyncForegroundInfo(
-                NotificationsManager.CORE_INSTALL_NOTIFICATION_ID,
-                notificationsManager.installingCoresNotification(),
-            )
-
-        setForegroundAsync(foregroundInfo)
 
         try {
             val cores =

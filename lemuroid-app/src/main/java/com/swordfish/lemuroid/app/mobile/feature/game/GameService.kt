@@ -1,10 +1,14 @@
 package com.swordfish.lemuroid.app.mobile.feature.game
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
+import android.os.Build
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
+import androidx.core.content.ContextCompat
 import com.swordfish.lemuroid.app.mobile.shared.NotificationsManager
 import dagger.android.DaggerService
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +48,12 @@ class GameService : DaggerService() {
     }
 
     private fun displayNotification(intent: Intent) {
+        // The game running notification is optional: only promote the service to the foreground
+        // (which requires posting a notification) when the user has granted the permission.
+        // Without it we keep the service as a plain started service and show nothing.
+        if (!hasNotificationPermission()) {
+            return
+        }
         val gameIntent =
             intent.getParcelableExtra<Intent>(EXTRA_GAME_ACTIVITY_INTENT)
                 ?: return
@@ -54,6 +64,16 @@ class GameService : DaggerService() {
             notification,
             ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
         )
+    }
+
+    private fun hasNotificationPermission(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return true
+        }
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS,
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun hideNotification() {
