@@ -5,7 +5,9 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
@@ -53,6 +55,7 @@ import com.swordfish.lemuroid.lib.android.RetrogradeComponentActivity
 import com.swordfish.lemuroid.lib.bios.BiosManager
 import com.swordfish.lemuroid.lib.core.CoresSelection
 import com.swordfish.lemuroid.lib.injection.PerActivity
+import com.swordfish.lemuroid.lib.library.LemuroidLibrary
 import com.swordfish.lemuroid.lib.library.db.RetrogradeDatabase
 import com.swordfish.lemuroid.lib.library.db.entity.Game
 import com.swordfish.lemuroid.lib.preferences.SharedPreferencesHelper
@@ -134,6 +137,25 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
 
             val onGameLongClick = { game: Game ->
                 selectedGameState.value = game
+            }
+
+            val artworkTargetGameState =
+                remember {
+                    mutableStateOf<Game?>(null)
+                }
+
+            val pickArtworkLauncher =
+                rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { imageUri ->
+                    val targetGame = artworkTargetGameState.value
+                    if (imageUri != null && targetGame != null) {
+                        gameInteractor.onSetCustomArtwork(targetGame, imageUri)
+                    }
+                    artworkTargetGameState.value = null
+                }
+
+            val onChangeArtwork = { game: Game ->
+                artworkTargetGameState.value = game
+                pickArtworkLauncher.launch("image/*")
             }
 
             val onGameClick = { game: Game ->
@@ -277,6 +299,7 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
                     gameInteractor.onFavoriteToggle(game, isFavorite)
                 },
                 onCreateShortcut = { gameInteractor.onCreateShortcut(it) },
+                onChangeArtwork = onChangeArtwork,
             )
         }
     }
@@ -326,7 +349,8 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
                 retrogradeDb: RetrogradeDatabase,
                 shortcutsGenerator: ShortcutsGenerator,
                 gameLauncher: GameLauncher,
-            ) = GameInteractor(activity, retrogradeDb, false, shortcutsGenerator, gameLauncher)
+                lemuroidLibrary: LemuroidLibrary,
+            ) = GameInteractor(activity, retrogradeDb, false, shortcutsGenerator, gameLauncher, lemuroidLibrary)
         }
     }
 }

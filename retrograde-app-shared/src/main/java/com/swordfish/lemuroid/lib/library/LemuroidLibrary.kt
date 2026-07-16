@@ -19,6 +19,7 @@
 
 package com.swordfish.lemuroid.lib.library
 
+import android.net.Uri
 import com.swordfish.lemuroid.common.coroutines.batchWithSizeAndTime
 import com.swordfish.lemuroid.lib.bios.BiosManager
 import com.swordfish.lemuroid.lib.library.db.RetrogradeDatabase
@@ -43,6 +44,7 @@ import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 import timber.log.Timber
+import java.io.InputStream
 
 class LemuroidLibrary(
     private val retrogradedb: RetrogradeDatabase,
@@ -240,7 +242,7 @@ class LemuroidLibrary(
                 .mapNotNull { safeStorageFile(provider, it) }
                 .mapNotNull { storageFile ->
                     val metadata = metadataProvider.retrieveMetadata(storageFile)
-                    convertGameMetadataToGame(groupedStorageFile, storageFile, metadata, startedAtMs)
+                    convertGameMetadataToGame(groupedStorageFile, storageFile, metadata, provider, startedAtMs)
                 }
                 .firstOrNull()
 
@@ -279,6 +281,7 @@ class LemuroidLibrary(
         groupedStorageFile: GroupedStorageFiles,
         storageFile: StorageFile,
         gameMetadata: GameMetadata?,
+        provider: StorageProvider,
         lastIndexedAt: Long,
     ): Game? {
         if (gameMetadata == null) {
@@ -295,15 +298,34 @@ class LemuroidLibrary(
                 storageFile.name
             }
 
+        // A custom artwork image sitting next to the game file takes precedence over the remote cover.
+        val customArtUrl =
+            runCatching { provider.getGameArtUri(groupedStorageFile.primaryFile.uri) }
+                .getOrNull()
+                ?.toString()
+
         return Game(
             fileName = fileName,
             fileUri = groupedStorageFile.primaryFile.uri.toString(),
             title = gameMetadata.name ?: groupedStorageFile.primaryFile.name,
             systemId = gameSystem.id.dbname,
             developer = gameMetadata.developer,
-            coverFrontUrl = gameMetadata.thumbnail,
+            coverFrontUrl = customArtUrl ?: gameMetadata.thumbnail,
             lastIndexedAt = lastIndexedAt,
         )
+    }
+
+    /**
+     * Writes [inputStream] as custom artwork next to [game]'s file and returns the uri of the stored
+     * image, or null if it could not be written.
+     */
+    fun writeGameCover(
+        game: Game,
+        imageExtension: String,
+        inputStream: InputStream,
+    ): Uri? {
+        val provider = storageProviderRegistry.get().getProvider(game)
+        return provider.writeGameArt(Uri.parse(game.fileUri), imageExtension, inputStream)
     }
 
     private fun removeDeletedDataFiles(startedAtMs: Long) {

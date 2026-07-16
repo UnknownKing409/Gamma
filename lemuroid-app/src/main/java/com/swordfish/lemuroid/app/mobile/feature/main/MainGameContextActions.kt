@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AppShortcut
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material3.BottomSheetDefaults
@@ -55,6 +56,7 @@ fun MainGameContextActions(
     onGameRestart: (Game) -> Unit,
     onFavoriteToggle: (Game, Boolean) -> Unit,
     onCreateShortcut: (Game) -> Unit,
+    onChangeArtwork: (Game) -> Unit,
 ) {
     val modalSheetState = rememberModalBottomSheetState(true)
     val selectedGame = selectedGameState.value
@@ -80,6 +82,7 @@ fun MainGameContextActions(
                 onFavoriteToggle = onFavoriteToggle,
                 shortcutSupported = shortcutSupported,
                 onCreateShortcut = onCreateShortcut,
+                onChangeArtwork = onChangeArtwork,
             )
         }
     }
@@ -94,6 +97,7 @@ private fun ContextActionContent(
     onFavoriteToggle: (Game, Boolean) -> Unit,
     shortcutSupported: Boolean,
     onCreateShortcut: (Game) -> Unit,
+    onChangeArtwork: (Game) -> Unit,
 ) {
     Column(
         modifier =
@@ -139,6 +143,15 @@ private fun ContextActionContent(
                 },
             )
         }
+
+        ContextActionEntry(
+            label = stringResource(id = R.string.game_context_menu_change_artwork),
+            icon = Icons.Default.Image,
+            onClick = {
+                onChangeArtwork(selectedGame)
+                selectedGameState.value = null
+            },
+        )
 
         if (shortcutSupported) {
             ContextActionEntry(

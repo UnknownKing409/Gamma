@@ -6,7 +6,6 @@ import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
-import androidx.work.ListenableWorker
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
@@ -14,8 +13,6 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.swordfish.lemuroid.app.mobile.feature.settings.SettingsManager
-import com.swordfish.lemuroid.app.mobile.shared.NotificationsManager
-import com.swordfish.lemuroid.app.utils.android.createSyncForegroundInfo
 import com.swordfish.lemuroid.lib.injection.AndroidWorkerInjection
 import com.swordfish.lemuroid.lib.library.findByName
 import com.swordfish.lemuroid.lib.savesync.SaveSyncManager
@@ -43,8 +40,6 @@ class SaveSyncWork(context: Context, workerParams: WorkerParameters) :
         if (!shouldPerformSaveSync()) {
             return Result.success()
         }
-
-        displayNotification()
 
         val coresToSync =
             settingsManager.syncStatesCores()
@@ -76,17 +71,6 @@ class SaveSyncWork(context: Context, workerParams: WorkerParameters) :
         val isAutoSync = inputData.getBoolean(IS_AUTO, false)
         val isManualSync = !isAutoSync
         return settingsManager.autoSaveSync() && isAutoSync || isManualSync
-    }
-
-    private fun displayNotification() {
-        val notificationsManager = NotificationsManager(applicationContext)
-
-        val foregroundInfo =
-            createSyncForegroundInfo(
-                NotificationsManager.SAVE_SYNC_NOTIFICATION_ID,
-                notificationsManager.saveSyncNotification(),
-            )
-        setForegroundAsync(foregroundInfo)
     }
 
     companion object {

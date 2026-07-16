@@ -2,10 +2,7 @@ package com.swordfish.lemuroid.app.shared.library
 
 import android.content.Context
 import androidx.work.CoroutineWorker
-import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
-import com.swordfish.lemuroid.app.mobile.shared.NotificationsManager
-import com.swordfish.lemuroid.app.utils.android.createSyncForegroundInfo
 import com.swordfish.lemuroid.lib.injection.AndroidWorkerInjection
 import com.swordfish.lemuroid.lib.library.LemuroidLibrary
 import dagger.Binds
@@ -24,16 +21,6 @@ class LibraryIndexWork(context: Context, workerParams: WorkerParameters) :
 
     override suspend fun doWork(): Result {
         AndroidWorkerInjection.inject(this)
-
-        val notificationsManager = NotificationsManager(applicationContext)
-
-        val foregroundInfo =
-            createSyncForegroundInfo(
-                NotificationsManager.LIBRARY_INDEXING_NOTIFICATION_ID,
-                notificationsManager.libraryIndexingNotification(),
-            )
-
-        setForegroundAsync(foregroundInfo)
 
         val result =
             withContext(Dispatchers.IO) {
