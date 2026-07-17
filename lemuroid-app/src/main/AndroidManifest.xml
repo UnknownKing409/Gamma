@@ -40,6 +40,7 @@
         android:theme="@style/LemuroidMaterialTheme">
         <activity
             android:name="com.swordfish.lemuroid.app.mobile.feature.main.MainActivity"
+            android:enableOnBackInvokedCallback="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

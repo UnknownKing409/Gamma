@@ -10,6 +10,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -78,6 +82,7 @@ import kotlinx.coroutines.GlobalScope
 import javax.inject.Inject
 
 private const val TABLET_SMALLEST_WIDTH_DP = 600
+private const val NAV_ANIM_DURATION = 350
 
 @OptIn(DelicateCoroutinesApi::class)
 class MainActivity :
@@ -210,6 +215,24 @@ class MainActivity :
                     modifier = Modifier.fillMaxSize(),
                     navController = navController,
                     startDestination = MainRoute.HOME.route,
+                    // Settings pages slide in from the right (and out to the right on back).
+                    // The pop transitions double as the seekable predictive-back animation.
+                    enterTransition = {
+                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(NAV_ANIM_DURATION)) +
+                            fadeIn(tween(NAV_ANIM_DURATION))
+                    },
+                    exitTransition = {
+                        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(NAV_ANIM_DURATION)) +
+                            fadeOut(tween(NAV_ANIM_DURATION))
+                    },
+                    popEnterTransition = {
+                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(NAV_ANIM_DURATION)) +
+                            fadeIn(tween(NAV_ANIM_DURATION))
+                    },
+                    popExitTransition = {
+                        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(NAV_ANIM_DURATION)) +
+                            fadeOut(tween(NAV_ANIM_DURATION))
+                    },
                 ) {
                     composable(MainRoute.HOME) {
                         HomeScreen(

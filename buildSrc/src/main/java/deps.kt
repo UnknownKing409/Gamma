@@ -14,8 +14,8 @@ object deps {
         const val okHttp          = "4.9.1"
         const val retrofit        = "2.9.0"
         const val work            = "2.9.0"
-        const val navigation      = "2.5.2"
-        const val lifecycle       = "2.6.1"
+        const val navigation      = "2.8.5"
+        const val lifecycle       = "2.8.7"
         const val leanback        = "1.1.0-rc01"
         const val googleApiClient = "1.32.1"
         const val paging          = "3.2.1"
@@ -23,15 +23,15 @@ object deps {
         const val ksp             = "2.3.9"
         const val serialization   = "1.2.2"
         const val fragment        = "1.5.1"
-        const val activity        = "1.7.2"
+        const val activity        = "1.9.3"
         const val libretrodroid   = "0.13.2"
-        const val composeBom      = "2024.02.02"
+        const val composeBom      = "2024.12.01"
         const val kotlinExtension = "1.4.6"
         const val padkit          = "1.0.0-beta1"
 
         // Make sure this is compatible with current bom versions:
         // https://developer.android.com/jetpack/compose/bom/bom-mapping
-        const val accompanist     = "0.34.0"
+        const val accompanist     = "0.36.0"
     }
 
     object libs {
@@ -57,7 +57,7 @@ object deps {
                 const val processor = "androidx.lifecycle:lifecycle-compiler:${versions.lifecycle}"
                 const val runtime = "androidx.lifecycle:lifecycle-runtime-ktx:${versions.lifecycle}"
                 const val reactiveStreams = "android.arch.lifecycle:reactivestreams:1.1.1"
-                const val viewModelCompose = "androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1"
+                const val viewModelCompose = "androidx.lifecycle:lifecycle-viewmodel-compose:${versions.lifecycle}"
             }
             object preferences {
                 const val preferencesKtx = "androidx.preference:preference-ktx:1.1.1"

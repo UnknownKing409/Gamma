@@ -109,19 +109,17 @@ fun LemuroidCardSettingsGroup(
     title: @Composable (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Surface {
-        Column(
-            modifier =
-                modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp),
-        ) {
-            OutlinedCard {
-                if (title != null) {
-                    SettingsGroupTitleSmall(title)
-                }
-                content()
+    Column(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp),
+    ) {
+        OutlinedCard {
+            if (title != null) {
+                SettingsGroupTitleSmall(title)
             }
+            content()
         }
     }
 }
