@@ -24,7 +24,9 @@ import java.io.File
  * PDF assets are rendered with [PdfRenderer], which is not thread-safe, so all PDF work is serialised
  * behind a [Mutex].
  */
-class DeltaSkinAssetLoader(private val cacheDir: File) {
+class DeltaSkinAssetLoader(
+    private val cacheDir: File,
+) {
     suspend fun loadBitmap(
         skinDir: File,
         assetName: String,

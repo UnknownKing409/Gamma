@@ -6,8 +6,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.swordfish.lemuroid.lib.library.SystemID
 import com.swordfish.lemuroid.lib.library.skin.ControllerSkinPreferences
+import com.swordfish.lemuroid.lib.library.skin.DeltaSkinHandle
 import com.swordfish.lemuroid.lib.library.skin.DeltaSkinManager
-import com.swordfish.lemuroid.lib.library.skin.DeltaSkinSystemMapping
+import com.swordfish.touchinput.deltaskin.DeltaSkinInfo
 import com.swordfish.touchinput.radial.settings.TouchControllerSettingsManager.Orientation
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,29 +17,39 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+/**
+ * Backs the per-system skin screen (the first settings layer): it exposes the currently selected
+ * portrait and landscape skins, each with a full-width preview, and drills into the per-orientation
+ * picker from there.
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SystemSkinViewModel(
     private val deltaSkinManager: DeltaSkinManager,
     private val controllerSkinPreferences: ControllerSkinPreferences,
     private val systemID: SystemID?,
+    private val isTablet: Boolean,
 ) : ViewModel() {
     class Factory(
         private val deltaSkinManager: DeltaSkinManager,
         private val controllerSkinPreferences: ControllerSkinPreferences,
         private val systemDbName: String?,
+        private val isTablet: Boolean,
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val systemID = SystemID.values().firstOrNull { it.dbname == systemDbName }
-            return SystemSkinViewModel(deltaSkinManager, controllerSkinPreferences, systemID) as T
+            return SystemSkinViewModel(deltaSkinManager, controllerSkinPreferences, systemID, isTablet) as T
         }
     }
 
-    data class SkinOption(val id: String, val name: String)
+    /** The skin selected for one orientation: its display name and preview, both null when default. */
+    data class OrientationSelection(
+        val skinName: String? = null,
+        val preview: SkinPreview? = null,
+    )
 
     data class State(
-        val options: List<SkinOption> = emptyList(),
-        val portraitSelectedId: String? = null,
-        val landscapeSelectedId: String? = null,
+        val portrait: OrientationSelection = OrientationSelection(),
+        val landscape: OrientationSelection = OrientationSelection(),
     )
 
     private val refreshTrigger = MutableStateFlow(0)
@@ -50,25 +61,30 @@ class SystemSkinViewModel(
 
     private suspend fun load(): State {
         val system = systemID ?: return State()
-        val options =
-            deltaSkinManager
-                .listSkins()
-                .filter { DeltaSkinSystemMapping.isCompatible(it.info.gameTypeIdentifier, system) }
-                .map { SkinOption(it.id, it.info.name) }
+        val handlesById = deltaSkinManager.listSkins().associateBy { it.id }
         return State(
-            options = options,
-            portraitSelectedId = controllerSkinPreferences.getSelectedSkinId(system, Orientation.PORTRAIT),
-            landscapeSelectedId = controllerSkinPreferences.getSelectedSkinId(system, Orientation.LANDSCAPE),
+            portrait = orientationSelection(handlesById, system, Orientation.PORTRAIT),
+            landscape = orientationSelection(handlesById, system, Orientation.LANDSCAPE),
         )
     }
 
-    fun setSelection(
+    private fun orientationSelection(
+        handlesById: Map<String, DeltaSkinHandle>,
+        systemID: SystemID,
         orientation: Orientation,
-        skinId: String?,
-    ) {
-        val system = systemID ?: return
-        controllerSkinPreferences.setSelectedSkinId(system, orientation, skinId)
-        refresh()
+    ): OrientationSelection {
+        val id = controllerSkinPreferences.getSelectedSkinId(systemID, orientation) ?: return OrientationSelection()
+        val handle = handlesById[id] ?: return OrientationSelection()
+        val orientationName =
+            when (orientation) {
+                Orientation.LANDSCAPE -> DeltaSkinInfo.ORIENTATION_LANDSCAPE
+                Orientation.PORTRAIT -> DeltaSkinInfo.ORIENTATION_PORTRAIT
+            }
+        val representation = deltaSkinManager.resolveRepresentation(handle.info, isTablet, orientationName)
+        return OrientationSelection(
+            skinName = handle.info.name,
+            preview = representation?.let { SkinPreview(handle.directory, it) },
+        )
     }
 
     fun importSkin(uri: Uri) {
@@ -78,23 +94,7 @@ class SystemSkinViewModel(
         }
     }
 
-    fun deleteSkin(id: String) {
-        viewModelScope.launch {
-            val system = systemID
-            if (system != null) {
-                if (controllerSkinPreferences.getSelectedSkinId(system, Orientation.PORTRAIT) == id) {
-                    controllerSkinPreferences.setSelectedSkinId(system, Orientation.PORTRAIT, null)
-                }
-                if (controllerSkinPreferences.getSelectedSkinId(system, Orientation.LANDSCAPE) == id) {
-                    controllerSkinPreferences.setSelectedSkinId(system, Orientation.LANDSCAPE, null)
-                }
-            }
-            deltaSkinManager.deleteSkin(id)
-            refresh()
-        }
-    }
-
-    private fun refresh() {
+    fun refresh() {
         refreshTrigger.value += 1
     }
 }

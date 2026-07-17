@@ -20,7 +20,6 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import java.io.File
 import kotlin.math.abs
 import kotlin.math.min
@@ -82,8 +81,7 @@ fun DeltaSkinOverlay(
                         Modifier
                             .absoluteOffset {
                                 IntOffset(layout.originX.roundToInt(), layout.originY.roundToInt())
-                            }
-                            .size(
+                            }.size(
                                 width = with(density) { layout.drawnW.toDp() },
                                 height = with(density) { layout.drawnH.toDp() },
                             ),
@@ -110,8 +108,7 @@ fun DeltaSkinOverlay(
                         .size(
                             width = with(density) { rect.width.toDp() },
                             height = with(density) { rect.height.toDp() },
-                        )
-                        .controlInput(control, onButton, onMenu, onMotion),
+                        ).controlInput(control, onButton, onMenu, onMotion),
             )
         }
     }
@@ -148,7 +145,11 @@ private fun Modifier.controlInput(
         is DeltaSkinInputMapping.Control.Dpad ->
             pointerInput(control) {
                 directionGesture(snapToEightWay = true) { x, y ->
-                    onMotion(com.swordfish.touchinput.radial.layouts.shared.ComposeTouchLayouts.MOTION_SOURCE_DPAD, x, y)
+                    onMotion(
+                        com.swordfish.touchinput.radial.layouts.shared.ComposeTouchLayouts.MOTION_SOURCE_DPAD,
+                        x,
+                        y,
+                    )
                 }
             }
 

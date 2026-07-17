@@ -64,6 +64,7 @@ class GameViewModelTouchControls(
         val representation: DeltaSkinRepresentation,
         val isLandscape: Boolean,
     )
+
     private val touchControlId = MutableStateFlow(TouchControllerID.GB)
     private val screenOrientation = MutableStateFlow(TouchControllerSettingsManager.Orientation.PORTRAIT)
     private val menuPressed = MutableStateFlow(false)
@@ -144,7 +145,9 @@ class GameViewModelTouchControls(
 
         data object Loading : SkinUiState
 
-        data class Active(val skin: ActiveSkin) : SkinUiState
+        data class Active(
+            val skin: ActiveSkin,
+        ) : SkinUiState
     }
 
     private val skinState: StateFlow<SkinUiState> =
@@ -153,8 +156,7 @@ class GameViewModelTouchControls(
                 controllerSkinPreferences
                     .observeSelectedSkinId(systemID, orientation)
                     .map { skinId -> skinId to orientation }
-            }
-            .distinctUntilChanged()
+            }.distinctUntilChanged()
             .flatMapLatest { (skinId, orientation) ->
                 flow {
                     if (skinId == null) {
@@ -164,8 +166,7 @@ class GameViewModelTouchControls(
                     emit(SkinUiState.Loading)
                     emit(resolveSkinState(skinId, orientation))
                 }
-            }
-            .stateIn(scope, SharingStarted.Eagerly, computeInitialSkinState())
+            }.stateIn(scope, SharingStarted.Eagerly, computeInitialSkinState())
 
     fun getSkinState(): StateFlow<SkinUiState> = skinState
 

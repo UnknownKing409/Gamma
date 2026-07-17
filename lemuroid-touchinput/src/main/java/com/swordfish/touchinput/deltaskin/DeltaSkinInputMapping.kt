@@ -6,7 +6,6 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * Translates Delta skin input identifiers into Lemuroid's keycodes / motion sources and classifies
@@ -57,7 +56,9 @@ object DeltaSkinInputMapping {
     /** Classified, renderable representation of a single skin item's inputs. */
     sealed class Control {
         /** One or more regular buttons pressed together. */
-        data class Buttons(val keyCodes: List<Int>) : Control()
+        data class Buttons(
+            val keyCodes: List<Int>,
+        ) : Control()
 
         /** Opens the Lemuroid in-game menu. */
         object Menu : Control()
@@ -66,12 +67,18 @@ object DeltaSkinInputMapping {
         object Dpad : Control()
 
         /** Analog stick -> the given motion source. */
-        data class Thumbstick(val motionSource: Int) : Control()
+        data class Thumbstick(
+            val motionSource: Int,
+        ) : Control()
 
         /**
          * A button that emits a fixed motion on an analog stick (e.g. N64 C-buttons on the right stick).
          */
-        data class AnalogButton(val motionSource: Int, val x: Float, val y: Float) : Control()
+        data class AnalogButton(
+            val motionSource: Int,
+            val x: Float,
+            val y: Float,
+        ) : Control()
 
         /** Unsupported input (e.g. NDS touch screen in v1). */
         object Unsupported : Control()

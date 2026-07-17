@@ -28,9 +28,8 @@ class ControllerSkinsViewModel(
             private val deltaSkinManager: DeltaSkinManager,
             private val controllerSkinPreferences: ControllerSkinPreferences,
         ) : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return ControllerSkinsViewModel(deltaSkinManager, controllerSkinPreferences) as T
-            }
+            override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                ControllerSkinsViewModel(deltaSkinManager, controllerSkinPreferences) as T
         }
 
     data class SystemSkins(
@@ -39,7 +38,9 @@ class ControllerSkinsViewModel(
         val landscapeSkinName: String?,
     )
 
-    data class State(val systems: List<SystemSkins> = emptyList())
+    data class State(
+        val systems: List<SystemSkins> = emptyList(),
+    )
 
     private val refreshTrigger = MutableStateFlow(0)
 

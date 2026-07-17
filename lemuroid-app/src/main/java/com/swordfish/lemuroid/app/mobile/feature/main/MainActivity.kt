@@ -20,12 +20,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.fredporciuncula.flow.preferences.FlowSharedPreferences
+import com.swordfish.lemuroid.R
 import com.swordfish.lemuroid.app.mobile.feature.home.HomeScreen
 import com.swordfish.lemuroid.app.mobile.feature.home.HomeViewModel
 import com.swordfish.lemuroid.app.mobile.feature.settings.advanced.AdvancedSettingsScreen
@@ -42,6 +44,8 @@ import com.swordfish.lemuroid.app.mobile.feature.settings.savesync.SaveSyncSetti
 import com.swordfish.lemuroid.app.mobile.feature.settings.savesync.SaveSyncSettingsViewModel
 import com.swordfish.lemuroid.app.mobile.feature.settings.skins.ControllerSkinsScreen
 import com.swordfish.lemuroid.app.mobile.feature.settings.skins.ControllerSkinsViewModel
+import com.swordfish.lemuroid.app.mobile.feature.settings.skins.SkinOrientationScreen
+import com.swordfish.lemuroid.app.mobile.feature.settings.skins.SkinOrientationViewModel
 import com.swordfish.lemuroid.app.mobile.feature.settings.skins.SystemSkinScreen
 import com.swordfish.lemuroid.app.mobile.feature.settings.skins.SystemSkinViewModel
 import com.swordfish.lemuroid.app.mobile.feature.shortcuts.ShortcutsGenerator
@@ -67,10 +71,13 @@ import com.swordfish.lemuroid.lib.library.skin.DeltaSkinManager
 import com.swordfish.lemuroid.lib.preferences.SharedPreferencesHelper
 import com.swordfish.lemuroid.lib.savesync.SaveSyncManager
 import com.swordfish.lemuroid.lib.storage.DirectoriesManager
+import com.swordfish.touchinput.radial.settings.TouchControllerSettingsManager
 import dagger.Provides
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import javax.inject.Inject
+
+private const val TABLET_SMALLEST_WIDTH_DP = 600
 
 @OptIn(DelicateCoroutinesApi::class)
 class MainActivity :
@@ -128,6 +135,8 @@ class MainActivity :
             MainScreen(navController)
         }
     }
+
+    private fun isTabletDevice(): Boolean = resources.configuration.smallestScreenWidthDp >= TABLET_SMALLEST_WIDTH_DP
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -319,6 +328,7 @@ class MainActivity :
                     composable(MainRoute.SETTINGS_CONTROLLER_SKIN_SYSTEM) { backStackEntry ->
                         val systemId = backStackEntry.arguments?.getString(ARG_SYSTEM_ID)
                         SystemSkinScreen(
+                            systemId = systemId,
                             modifier = Modifier.padding(padding),
                             viewModel =
                                 viewModel(
@@ -327,6 +337,38 @@ class MainActivity :
                                             deltaSkinManager,
                                             controllerSkinPreferences,
                                             systemId,
+                                            isTabletDevice(),
+                                        ),
+                                ),
+                            navController = navController,
+                        )
+                    }
+                    composable(MainRoute.SETTINGS_CONTROLLER_SKIN_ORIENTATION) { backStackEntry ->
+                        val systemId = backStackEntry.arguments?.getString(ARG_SYSTEM_ID)
+                        val orientation =
+                            TouchControllerSettingsManager.Orientation.valueOf(
+                                backStackEntry.arguments?.getString(ARG_ORIENTATION)
+                                    ?: TouchControllerSettingsManager.Orientation.PORTRAIT.name,
+                            )
+                        SkinOrientationScreen(
+                            title =
+                                stringResource(
+                                    if (orientation == TouchControllerSettingsManager.Orientation.LANDSCAPE) {
+                                        R.string.controller_skins_landscape
+                                    } else {
+                                        R.string.controller_skins_portrait
+                                    },
+                                ),
+                            modifier = Modifier.padding(padding),
+                            viewModel =
+                                viewModel(
+                                    factory =
+                                        SkinOrientationViewModel.Factory(
+                                            deltaSkinManager,
+                                            controllerSkinPreferences,
+                                            systemId,
+                                            orientation,
+                                            isTabletDevice(),
                                         ),
                                 ),
                         )
