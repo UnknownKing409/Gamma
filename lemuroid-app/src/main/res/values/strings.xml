@@ -54,6 +54,10 @@
     <string name="controller_skins_portrait">Portrait</string>
     <string name="controller_skins_landscape">Landscape</string>
     <string name="controller_skins_delete">Delete</string>
+    <string name="controller_skins_installed">Installed skins</string>
+    <string name="controller_skins_none_installed">No skins installed for this system</string>
+    <string name="controller_skins_orientations">Orientations: %1$s</string>
+    <string name="controller_skins_delete_confirm_message">\"%1$s\" will be removed. Any orientation using it reverts to the default controls.</string>
 
     <string name="settings_retropad_button_name">RetroPad %1$s</string>
 

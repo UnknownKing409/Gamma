@@ -72,7 +72,9 @@ class DeltaSkinAssetLoader(
 
     private fun diskCacheDir(): File = File(cacheDir, DISK_CACHE_SUBFOLDER).apply { mkdirs() }
 
-    private fun diskFileName(key: String): String = "${key.hashCode().toUInt().toString(16)}.png"
+    // Prefix the file with the skin's hash so every asset of a skin can be located (and evicted) together.
+    private fun diskFileName(key: String): String =
+        "${skinPrefix(key.substringBefore('/'))}_${key.hashCode().toUInt().toString(16)}.png"
 
     private fun writeToDisk(
         bitmap: Bitmap,
@@ -121,6 +123,26 @@ class DeltaSkinAssetLoader(
         private const val DISK_CACHE_SUBFOLDER = "skin-cache"
 
         private val pdfMutex = Mutex()
+
+        // Stable filename prefix identifying every cached asset of a skin. The trailing separator in the
+        // eviction filter guards against one skin's prefix being a prefix of another's.
+        private fun skinPrefix(skinDirName: String): String = skinDirName.hashCode().toUInt().toString(16)
+
+        /** Drops every in-memory and on-disk cached asset belonging to the given skin directory. */
+        suspend fun evictSkin(
+            cacheDir: File,
+            skinDirName: String,
+        ) = withContext(Dispatchers.IO) {
+            memoryCache
+                .snapshot()
+                .keys
+                .filter { it.startsWith("$skinDirName/") }
+                .forEach { memoryCache.remove(it) }
+            val prefix = "${skinPrefix(skinDirName)}_"
+            File(cacheDir, DISK_CACHE_SUBFOLDER)
+                .listFiles { file -> file.name.startsWith(prefix) }
+                ?.forEach { it.delete() }
+        }
 
         // Process-wide cache so bitmaps survive recomposition and orientation changes.
         private val memoryCache: LruCache<String, Bitmap> =

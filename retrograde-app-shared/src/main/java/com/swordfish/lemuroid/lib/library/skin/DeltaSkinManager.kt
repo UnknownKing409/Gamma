@@ -3,6 +3,7 @@ package com.swordfish.lemuroid.lib.library.skin
 import android.content.Context
 import android.net.Uri
 import com.swordfish.lemuroid.lib.storage.DirectoriesManager
+import com.swordfish.touchinput.deltaskin.DeltaSkinAssetLoader
 import com.swordfish.touchinput.deltaskin.DeltaSkinInfo
 import com.swordfish.touchinput.deltaskin.DeltaSkinRepresentation
 import kotlinx.coroutines.Dispatchers
@@ -70,6 +71,7 @@ class DeltaSkinManager(
     suspend fun deleteSkin(id: String) =
         withContext(Dispatchers.IO) {
             File(directoriesManager.getSkinsDirectory(), id).deleteRecursively()
+            DeltaSkinAssetLoader.evictSkin(context.cacheDir, id)
         }
 
     suspend fun loadHandle(id: String): DeltaSkinHandle? =

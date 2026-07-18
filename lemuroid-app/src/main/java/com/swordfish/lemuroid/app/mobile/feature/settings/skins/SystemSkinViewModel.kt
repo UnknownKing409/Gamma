@@ -8,6 +8,7 @@ import com.swordfish.lemuroid.lib.library.SystemID
 import com.swordfish.lemuroid.lib.library.skin.ControllerSkinPreferences
 import com.swordfish.lemuroid.lib.library.skin.DeltaSkinHandle
 import com.swordfish.lemuroid.lib.library.skin.DeltaSkinManager
+import com.swordfish.lemuroid.lib.library.skin.DeltaSkinSystemMapping
 import com.swordfish.touchinput.deltaskin.DeltaSkinInfo
 import com.swordfish.touchinput.radial.settings.TouchControllerSettingsManager.Orientation
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -47,9 +48,17 @@ class SystemSkinViewModel(
         val preview: SkinPreview? = null,
     )
 
+    /** An installed skin usable for this system, with the orientations its artwork provides. */
+    data class InstalledSkin(
+        val id: String,
+        val name: String,
+        val orientations: List<Orientation>,
+    )
+
     data class State(
         val portrait: OrientationSelection = OrientationSelection(),
         val landscape: OrientationSelection = OrientationSelection(),
+        val installedSkins: List<InstalledSkin> = emptyList(),
     )
 
     private val refreshTrigger = MutableStateFlow(0)
@@ -61,12 +70,26 @@ class SystemSkinViewModel(
 
     private suspend fun load(): State {
         val system = systemID ?: return State()
-        val handlesById = deltaSkinManager.listSkins().associateBy { it.id }
+        val handles = deltaSkinManager.listSkins()
+        val handlesById = handles.associateBy { it.id }
         return State(
             portrait = orientationSelection(handlesById, system, Orientation.PORTRAIT),
             landscape = orientationSelection(handlesById, system, Orientation.LANDSCAPE),
+            installedSkins = installedSkins(handles, system),
         )
     }
+
+    private fun installedSkins(
+        handles: List<DeltaSkinHandle>,
+        systemID: SystemID,
+    ): List<InstalledSkin> =
+        handles
+            .filter { DeltaSkinSystemMapping.isCompatible(it.info.gameTypeIdentifier, systemID) }
+            .map { handle ->
+                val orientations =
+                    Orientation.values().filter { handle.info.supportsOrientation(orientationName(it)) }
+                InstalledSkin(handle.id, handle.info.name, orientations)
+            }
 
     private fun orientationSelection(
         handlesById: Map<String, DeltaSkinHandle>,
@@ -75,12 +98,7 @@ class SystemSkinViewModel(
     ): OrientationSelection {
         val id = controllerSkinPreferences.getSelectedSkinId(systemID, orientation) ?: return OrientationSelection()
         val handle = handlesById[id] ?: return OrientationSelection()
-        val orientationName =
-            when (orientation) {
-                Orientation.LANDSCAPE -> DeltaSkinInfo.ORIENTATION_LANDSCAPE
-                Orientation.PORTRAIT -> DeltaSkinInfo.ORIENTATION_PORTRAIT
-            }
-        val representation = deltaSkinManager.resolveRepresentation(handle.info, isTablet, orientationName)
+        val representation = deltaSkinManager.resolveRepresentation(handle.info, isTablet, orientationName(orientation))
         return OrientationSelection(
             skinName = handle.info.name,
             preview = representation?.let { SkinPreview(handle.directory, it) },
@@ -93,6 +111,28 @@ class SystemSkinViewModel(
             refresh()
         }
     }
+
+    /**
+     * Removes a skin from the app (files and cached artwork), and reverts any orientation of this
+     * system that had it selected back to the default controls.
+     */
+    fun deleteSkin(id: String) {
+        viewModelScope.launch {
+            systemID?.let { system ->
+                Orientation.values()
+                    .filter { controllerSkinPreferences.getSelectedSkinId(system, it) == id }
+                    .forEach { controllerSkinPreferences.setSelectedSkinId(system, it, null) }
+            }
+            deltaSkinManager.deleteSkin(id)
+            refresh()
+        }
+    }
+
+    private fun orientationName(orientation: Orientation): String =
+        when (orientation) {
+            Orientation.LANDSCAPE -> DeltaSkinInfo.ORIENTATION_LANDSCAPE
+            Orientation.PORTRAIT -> DeltaSkinInfo.ORIENTATION_PORTRAIT
+        }
 
     fun refresh() {
         refreshTrigger.value += 1

@@ -7,12 +7,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -48,6 +56,8 @@ fun SystemSkinScreen(
             if (uri != null) viewModel.importSkin(uri)
         }
 
+    var pendingDelete by remember { mutableStateOf<SystemSkinViewModel.InstalledSkin?>(null) }
+
     LemuroidSettingsPage(modifier = modifier) {
         OrientationCard(
             title = stringResource(R.string.controller_skins_portrait),
@@ -70,7 +80,30 @@ fun SystemSkinScreen(
                 subtitle = { Text(text = stringResource(R.string.controller_skins_import_description)) },
                 onClick = { importLauncher.launch(arrayOf("application/zip", "application/octet-stream")) },
             )
+
+            HorizontalDivider()
+
+            if (state.installedSkins.isEmpty()) {
+                ListItem(
+                    headlineContent = { Text(text = stringResource(R.string.controller_skins_none_installed)) },
+                )
+            } else {
+                state.installedSkins.forEach { skin ->
+                    InstalledSkinItem(skin = skin, onDelete = { pendingDelete = skin })
+                }
+            }
         }
+    }
+
+    pendingDelete?.let { skin ->
+        DeleteSkinDialog(
+            skinName = skin.name,
+            onConfirm = {
+                viewModel.deleteSkin(skin.id)
+                pendingDelete = null
+            },
+            onDismiss = { pendingDelete = null },
+        )
     }
 }
 
@@ -102,4 +135,68 @@ private fun OrientationCard(
             )
         }
     }
+}
+
+@Composable
+private fun InstalledSkinItem(
+    skin: SystemSkinViewModel.InstalledSkin,
+    onDelete: () -> Unit,
+) {
+    val orientationLabels =
+        skin.orientations.map { orientation ->
+            stringResource(
+                when (orientation) {
+                    Orientation.PORTRAIT -> R.string.controller_skins_portrait
+                    Orientation.LANDSCAPE -> R.string.controller_skins_landscape
+                },
+            )
+        }
+    ListItem(
+        headlineContent = { Text(text = skin.name) },
+        supportingContent =
+            if (orientationLabels.isNotEmpty()) {
+                {
+                    Text(
+                        text =
+                            stringResource(
+                                R.string.controller_skins_orientations,
+                                orientationLabels.joinToString(", "),
+                            ),
+                    )
+                }
+            } else {
+                null
+            },
+        trailingContent = {
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.controller_skins_delete),
+                )
+            }
+        },
+    )
+}
+
+@Composable
+private fun DeleteSkinDialog(
+    skinName: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = stringResource(R.string.controller_skins_delete)) },
+        text = { Text(text = stringResource(R.string.controller_skins_delete_confirm_message, skinName)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(text = stringResource(R.string.controller_skins_delete))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.cancel))
+            }
+        },
+    )
 }
