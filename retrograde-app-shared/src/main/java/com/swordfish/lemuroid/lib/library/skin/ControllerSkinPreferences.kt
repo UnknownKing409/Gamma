@@ -53,5 +53,9 @@ class ControllerSkinPreferences(private val sharedPreferences: SharedPreferences
     private fun key(
         systemID: SystemID,
         orientation: Orientation,
-    ): String = "controller_skin_${systemID.dbname}_${orientation.ordinal}"
+    ): String {
+        // Systems that share a skin slot (e.g. GB and GBC) resolve to the same canonical key.
+        val canonical = DeltaSkinSystemMapping.canonicalSkinSystem(systemID)
+        return "controller_skin_${canonical.dbname}_${orientation.ordinal}"
+    }
 }
