@@ -1,6 +1,5 @@
 package com.swordfish.lemuroid.app.mobile.feature.settings.skins
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -16,7 +15,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import java.io.File
 
 /** The artwork needed to render a full-width [com.swordfish.touchinput.deltaskin.DeltaSkinPreview]. */
@@ -100,29 +98,6 @@ class SkinOrientationViewModel(
         val system = systemID ?: return
         controllerSkinPreferences.setSelectedSkinId(system, orientation, skinId)
         refresh()
-    }
-
-    fun importSkin(uri: Uri) {
-        viewModelScope.launch {
-            deltaSkinManager.importSkin(uri)
-            refresh()
-        }
-    }
-
-    fun deleteSkin(id: String) {
-        viewModelScope.launch {
-            val system = systemID
-            if (system != null) {
-                // A skin file is shared across orientations, so clear it wherever it was selected.
-                Orientation.values().forEach { affectedOrientation ->
-                    if (controllerSkinPreferences.getSelectedSkinId(system, affectedOrientation) == id) {
-                        controllerSkinPreferences.setSelectedSkinId(system, affectedOrientation, null)
-                    }
-                }
-            }
-            deltaSkinManager.deleteSkin(id)
-            refresh()
-        }
     }
 
     private fun orientationName(): String =
