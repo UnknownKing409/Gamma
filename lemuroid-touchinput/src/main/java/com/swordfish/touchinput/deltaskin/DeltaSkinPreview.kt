@@ -36,8 +36,8 @@ fun DeltaSkinPreview(
                 .fillMaxWidth()
                 .aspectRatio(mapW / mapH),
     ) {
-        val targetW = constraints.maxWidth
-        val targetH = constraints.maxHeight
+        val targetW = this.constraints.maxWidth
+        val targetH = this.constraints.maxHeight
         val bitmap by
             produceState<android.graphics.Bitmap?>(null, skinDir, assetName, targetW, targetH) {
                 value = assetLoader.loadBitmap(skinDir, assetName, targetW, targetH)

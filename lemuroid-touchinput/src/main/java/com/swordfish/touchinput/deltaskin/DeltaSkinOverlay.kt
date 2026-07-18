@@ -51,8 +51,8 @@ fun DeltaSkinOverlay(
     val density = LocalDensity.current
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val screenW = constraints.maxWidth.toFloat()
-        val screenH = constraints.maxHeight.toFloat()
+        val screenW = this.constraints.maxWidth.toFloat()
+        val screenH = this.constraints.maxHeight.toFloat()
         val mapW = representation.mappingSize.width
         val mapH = representation.mappingSize.height
 
