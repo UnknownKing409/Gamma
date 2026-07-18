@@ -63,7 +63,7 @@ fun SkinOrientationScreen(
         ) {
             LemuroidSettingsMenuLink(
                 title = { Text(text = stringResource(R.string.controller_skins_import)) },
-                onClick = { importLauncher.launch(arrayOf("*/*")) },
+                onClick = { importLauncher.launch(arrayOf("application/zip", "application/octet-stream")) },
             )
             state.options.forEach { option ->
                 LemuroidSettingsMenuLink(

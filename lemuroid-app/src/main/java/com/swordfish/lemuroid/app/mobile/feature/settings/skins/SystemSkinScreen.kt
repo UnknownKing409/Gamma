@@ -68,7 +68,7 @@ fun SystemSkinScreen(
             LemuroidSettingsMenuLink(
                 title = { Text(text = stringResource(R.string.controller_skins_import)) },
                 subtitle = { Text(text = stringResource(R.string.controller_skins_import_description)) },
-                onClick = { importLauncher.launch(arrayOf("*/*")) },
+                onClick = { importLauncher.launch(arrayOf("application/zip", "application/octet-stream")) },
             )
         }
     }
