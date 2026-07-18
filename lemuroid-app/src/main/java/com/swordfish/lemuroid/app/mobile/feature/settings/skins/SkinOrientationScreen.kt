@@ -21,7 +21,6 @@ import com.swordfish.touchinput.deltaskin.DeltaSkinAssetLoader
 
 @Composable
 fun SkinOrientationScreen(
-    title: String,
     modifier: Modifier = Modifier,
     viewModel: SkinOrientationViewModel,
 ) {
@@ -30,23 +29,21 @@ fun SkinOrientationScreen(
     val assetLoader = remember { DeltaSkinAssetLoader(context.cacheDir) }
 
     LemuroidSettingsPage(modifier = modifier) {
-        LemuroidCardSettingsGroup(title = { Text(text = title) }) {
+        PreviewOption(
+            label = stringResource(R.string.controller_skins_default),
+            preview = null,
+            assetLoader = assetLoader,
+            selected = state.selectedId == null,
+            onClick = { viewModel.setSelection(null) },
+        )
+        state.options.forEach { option ->
             PreviewOption(
-                label = stringResource(R.string.controller_skins_default),
-                preview = null,
+                label = option.name,
+                preview = option.preview,
                 assetLoader = assetLoader,
-                selected = state.selectedId == null,
-                onClick = { viewModel.setSelection(null) },
+                selected = state.selectedId == option.id,
+                onClick = { viewModel.setSelection(option.id) },
             )
-            state.options.forEach { option ->
-                PreviewOption(
-                    label = option.name,
-                    preview = option.preview,
-                    assetLoader = assetLoader,
-                    selected = state.selectedId == option.id,
-                    onClick = { viewModel.setSelection(option.id) },
-                )
-            }
         }
     }
 }
@@ -59,23 +56,25 @@ private fun PreviewOption(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
-    Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick),
-    ) {
-        SelectedSkinPreview(preview = preview, assetLoader = assetLoader)
-        ListItem(
-            headlineContent = { Text(text = label) },
-            trailingContent = {
-                if (selected) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = null,
-                    )
-                }
-            },
-        )
+    LemuroidCardSettingsGroup {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onClick),
+        ) {
+            ListItem(
+                headlineContent = { Text(text = label) },
+                trailingContent = {
+                    if (selected) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                        )
+                    }
+                },
+            )
+            SelectedSkinPreview(preview = preview, assetLoader = assetLoader)
+        }
     }
 }

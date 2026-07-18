@@ -67,6 +67,7 @@ import com.swordfish.lemuroid.lib.android.RetrogradeComponentActivity
 import com.swordfish.lemuroid.lib.bios.BiosManager
 import com.swordfish.lemuroid.lib.core.CoresSelection
 import com.swordfish.lemuroid.lib.injection.PerActivity
+import com.swordfish.lemuroid.lib.library.GameSystem
 import com.swordfish.lemuroid.lib.library.LemuroidLibrary
 import com.swordfish.lemuroid.lib.library.db.RetrogradeDatabase
 import com.swordfish.lemuroid.lib.library.db.entity.Game
@@ -159,6 +160,25 @@ class MainActivity :
                 mainViewModel.changeRoute(currentRoute)
             }
 
+            // The skin picker routes show a context-specific toolbar title rather than a static one:
+            // the selected system name on the system screen, and the orientation name on the orientation screen.
+            val topBarTitleOverride: String? =
+                when (currentRoute) {
+                    MainRoute.SETTINGS_CONTROLLER_SKIN_SYSTEM -> {
+                        val systemId = navBackStackEntry.value?.arguments?.getString(ARG_SYSTEM_ID)
+                        systemId?.let { stringResource(GameSystem.findById(it).shortTitleResId) }
+                    }
+                    MainRoute.SETTINGS_CONTROLLER_SKIN_ORIENTATION -> {
+                        val orientation = navBackStackEntry.value?.arguments?.getString(ARG_ORIENTATION)
+                        if (orientation == TouchControllerSettingsManager.Orientation.LANDSCAPE.name) {
+                            stringResource(R.string.controller_skins_landscape)
+                        } else {
+                            stringResource(R.string.controller_skins_portrait)
+                        }
+                    }
+                    else -> null
+                }
+
             val selectedGameState =
                 remember {
                     mutableStateOf<Game?>(null)
@@ -204,6 +224,7 @@ class MainActivity :
                 topBar = {
                     MainTopBar(
                         currentRoute = currentRoute,
+                        titleOverride = topBarTitleOverride,
                         navController = navController,
                         mainUIState = mainUIState,
                         onUpdateQueryString = { mainViewModel.changeQueryString(it) },
@@ -374,14 +395,6 @@ class MainActivity :
                                     ?: TouchControllerSettingsManager.Orientation.PORTRAIT.name,
                             )
                         SkinOrientationScreen(
-                            title =
-                                stringResource(
-                                    if (orientation == TouchControllerSettingsManager.Orientation.LANDSCAPE) {
-                                        R.string.controller_skins_landscape
-                                    } else {
-                                        R.string.controller_skins_portrait
-                                    },
-                                ),
                             modifier = Modifier.padding(padding),
                             viewModel =
                                 viewModel(
