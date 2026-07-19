@@ -10,9 +10,11 @@ import com.swordfish.lemuroid.lib.library.skin.DeltaSkinManager
 import com.swordfish.lemuroid.lib.library.skin.DeltaSkinSystemMapping
 import com.swordfish.touchinput.radial.settings.TouchControllerSettingsManager.Orientation
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -43,6 +45,9 @@ class ControllerSkinsViewModel(
     )
 
     private val refreshTrigger = MutableStateFlow(0)
+
+    private val importErrors = Channel<Unit>(Channel.BUFFERED)
+    val importErrorEvents = importErrors.receiveAsFlow()
 
     val uiState =
         refreshTrigger
@@ -77,8 +82,10 @@ class ControllerSkinsViewModel(
 
     fun importSkin(uri: Uri) {
         viewModelScope.launch {
-            deltaSkinManager.importSkin(uri)
-            refresh()
+            deltaSkinManager
+                .importSkin(uri)
+                .onSuccess { refresh() }
+                .onFailure { importErrors.send(Unit) }
         }
     }
 }

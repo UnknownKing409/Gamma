@@ -1,11 +1,14 @@
 package com.swordfish.lemuroid.app.mobile.feature.settings.skins
 
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.swordfish.lemuroid.R
@@ -22,6 +25,13 @@ fun ControllerSkinsScreen(
     navController: NavController,
 ) {
     val state = viewModel.uiState.collectAsState(ControllerSkinsViewModel.State()).value
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.importErrorEvents.collect {
+            Toast.makeText(context, R.string.controller_skins_import_error, Toast.LENGTH_LONG).show()
+        }
+    }
 
     val importLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
