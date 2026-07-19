@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.swordfish.lemuroid.R
 import com.swordfish.lemuroid.app.shared.systems.MetaSystemInfo
 
 @Composable
@@ -23,14 +22,6 @@ fun LemuroidSystemCard(
             system.getName(context)
         }
 
-    val subtitle =
-        remember(system.metaSystem.titleResId) {
-            context.getString(
-                R.string.system_grid_details,
-                system.count.toString(),
-            )
-        }
-
     ElevatedCard(
         modifier = modifier,
         onClick = onClick,
@@ -41,7 +32,7 @@ fun LemuroidSystemCard(
                     .fillMaxWidth(),
         ) {
             LemuroidSystemImage(system)
-            LemuroidTexts(title = title, subtitle = subtitle)
+            LemuroidTexts(title = title)
         }
     }
 }
