@@ -129,6 +129,7 @@ fun GameMenuHomeScreen(
         }
 
         LemuroidSettingsMenuLink(
+            enabled = !gameMenuRequest.controllerSkinActive,
             title = { Text(text = stringResource(id = R.string.game_menu_edit_touch_controls)) },
             icon = {
                 Icon(

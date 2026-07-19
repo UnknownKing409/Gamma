@@ -170,6 +170,9 @@ class GameViewModelTouchControls(
 
     fun getSkinState(): StateFlow<SkinUiState> = skinState
 
+    /** True when a controller skin is selected (loading or active), replacing the default touch controls. */
+    fun isSkinActive(): Boolean = skinState.value !is SkinUiState.None
+
     private suspend fun resolveSkinState(
         skinId: String,
         orientation: TouchControllerSettingsManager.Orientation,

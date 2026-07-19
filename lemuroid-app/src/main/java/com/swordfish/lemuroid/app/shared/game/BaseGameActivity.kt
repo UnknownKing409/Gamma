@@ -216,6 +216,10 @@ abstract class BaseGameActivity : ImmersiveActivity() {
                 this.putExtra(GameMenuContract.EXTRA_CURRENT_TILT_CONFIG, currentTiltConfiguration)
                 // TODO PADS... Make sure to avoid passing this if a physical pad is connected.
                 this.putExtra(GameMenuContract.EXTRA_TILT_ALL_CONFIGS, tiltConfigurations.toTypedArray())
+                this.putExtra(
+                    GameMenuContract.EXTRA_CONTROLLER_SKIN_ACTIVE,
+                    baseGameScreenViewModel.isControllerSkinActive(),
+                )
             }
         startActivityForResult(intent, DIALOG_REQUEST)
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)

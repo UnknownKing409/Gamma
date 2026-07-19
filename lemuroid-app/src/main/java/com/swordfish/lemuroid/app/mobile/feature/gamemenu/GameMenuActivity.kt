@@ -82,6 +82,7 @@ class GameMenuActivity : RetrogradeComponentActivity() {
         val currentDisk: Int,
         val currentTiltConfiguration: TiltConfiguration,
         val allTiltConfigurations: List<TiltConfiguration>,
+        val controllerSkinActive: Boolean,
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -130,6 +131,8 @@ class GameMenuActivity : RetrogradeComponentActivity() {
                         .serializable<Array<TiltConfiguration>>(GameMenuContract.EXTRA_TILT_ALL_CONFIGS)
                         ?.toList()
                         ?: emptyList(),
+                controllerSkinActive =
+                    extras?.getBoolean(GameMenuContract.EXTRA_CONTROLLER_SKIN_ACTIVE, false) ?: false,
             )
 
         setContent {
