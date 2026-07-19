@@ -51,6 +51,7 @@ enum class MainRoute(
     SETTINGS(
         route = "settings/home",
         titleId = R.string.title_settings,
+        parent = HOME,
         showTopLevelActions = false,
     ),
     SETTINGS_ADVANCED(
