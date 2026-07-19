@@ -49,10 +49,12 @@ fun MainTopBar(
     onUpdateQueryString: (String) -> Unit,
     onSetSearchActive: (Boolean) -> Unit,
     mainUIState: MainViewModel.UiState,
+    titleOverride: String? = null,
 ) {
     Column {
         LemuroidTopAppBar(
             route = currentRoute,
+            titleOverride = titleOverride,
             navController = navController,
             mainUIState = mainUIState,
             onUpdateQueryString = onUpdateQueryString,
@@ -73,6 +75,7 @@ fun LemuroidTopAppBar(
     mainUIState: MainViewModel.UiState,
     onUpdateQueryString: (String) -> Unit,
     onSetSearchActive: (Boolean) -> Unit,
+    titleOverride: String? = null,
 ) {
     val topBarColor = BottomAppBarDefaults.containerColor
 
@@ -84,7 +87,7 @@ fun LemuroidTopAppBar(
                     onUpdateQueryString = onUpdateQueryString,
                 )
             } else {
-                Text(text = stringResource(route.titleId))
+                Text(text = titleOverride ?: stringResource(route.titleId))
             }
         },
         colors =

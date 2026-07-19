@@ -7,7 +7,9 @@ import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.swordfish.lemuroid.R
 
 fun NavGraphBuilder.composable(
@@ -19,6 +21,20 @@ fun NavGraphBuilder.composable(
 
 fun NavController.navigateToRoute(route: MainRoute) {
     this.navigate(route.route)
+}
+
+const val ARG_SYSTEM_ID = "systemId"
+const val ARG_ORIENTATION = "orientation"
+
+fun NavController.navigateToSystemSkin(systemId: String) {
+    this.navigate("settings/skins/$systemId")
+}
+
+fun NavController.navigateToSkinOrientation(
+    systemId: String,
+    orientation: com.swordfish.touchinput.radial.settings.TouchControllerSettingsManager.Orientation,
+) {
+    this.navigate("settings/skins/$systemId/${orientation.name}")
 }
 
 enum class MainRoute(
@@ -59,6 +75,30 @@ enum class MainRoute(
         route = "settings/inputdevices",
         titleId = R.string.settings_title_gamepad_settings,
         parent = SETTINGS,
+        showTopLevelActions = false,
+    ),
+    SETTINGS_CONTROLLER_SKINS(
+        route = "settings/skins",
+        titleId = R.string.settings_title_controller_skins,
+        parent = SETTINGS,
+        showTopLevelActions = false,
+    ),
+    SETTINGS_CONTROLLER_SKIN_SYSTEM(
+        route = "settings/skins/{$ARG_SYSTEM_ID}",
+        titleId = R.string.settings_title_controller_skins,
+        parent = SETTINGS_CONTROLLER_SKINS,
+        arguments = listOf(navArgument(ARG_SYSTEM_ID) { type = NavType.StringType }),
+        showTopLevelActions = false,
+    ),
+    SETTINGS_CONTROLLER_SKIN_ORIENTATION(
+        route = "settings/skins/{$ARG_SYSTEM_ID}/{$ARG_ORIENTATION}",
+        titleId = R.string.settings_title_controller_skins,
+        parent = SETTINGS_CONTROLLER_SKIN_SYSTEM,
+        arguments =
+            listOf(
+                navArgument(ARG_SYSTEM_ID) { type = NavType.StringType },
+                navArgument(ARG_ORIENTATION) { type = NavType.StringType },
+            ),
         showTopLevelActions = false,
     ),
     SETTINGS_SAVE_SYNC(

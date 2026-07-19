@@ -1,6 +1,9 @@
 package com.swordfish.lemuroid.app.mobile.feature.game
 
 import android.graphics.RectF
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -13,11 +16,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Height
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material.icons.filled.RotateLeft
 import androidx.compose.material3.Card
@@ -35,9 +40,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -50,10 +57,14 @@ import androidx.compose.ui.window.Dialog
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.swordfish.lemuroid.app.shared.game.BaseGameScreenViewModel
+import com.swordfish.lemuroid.app.shared.game.viewmodel.GameViewModelTouchControls
 import com.swordfish.lemuroid.app.shared.game.viewmodel.GameViewModelTouchControls.Companion.MENU_LOADING_ANIMATION_MILLIS
 import com.swordfish.lemuroid.app.shared.settings.HapticFeedbackMode
 import com.swordfish.lemuroid.lib.controller.ControllerConfig
 import com.swordfish.touchinput.controller.R
+import com.swordfish.touchinput.deltaskin.DeltaSkinAssetLoader
+import com.swordfish.touchinput.deltaskin.DeltaSkinInputMapping
+import com.swordfish.touchinput.deltaskin.DeltaSkinOverlay
 import com.swordfish.touchinput.radial.LemuroidPadTheme
 import com.swordfish.touchinput.radial.LocalLemuroidPadTheme
 import com.swordfish.touchinput.radial.sensors.TiltConfiguration
@@ -88,6 +99,11 @@ fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
 
         val touchControllerSettings = touchControllerSettingsState.value
         val currentControllerConfig = controllerConfigState.value
+
+        val skinUiState =
+            viewModel
+                .getSkinState()
+                .collectAsState(GameViewModelTouchControls.SkinUiState.None)
 
         val tiltConfiguration = viewModel.getTiltConfiguration().collectAsState(TiltConfiguration.Disabled)
         val tiltSimulatedStates = viewModel.getSimulatedTiltEvents().collectAsState(InputState())
@@ -146,6 +162,38 @@ fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
                         (viewPos.bottom - fullPos.top) / fullPos.height,
                     )
                 gameView.viewport = viewport
+            }
+
+            val skinState = skinUiState.value
+
+            // A skin is selected: never draw the default controls (not even while it loads).
+            if (touchControlsVisibleState.value && skinState !is GameViewModelTouchControls.SkinUiState.None) {
+                if (skinState is GameViewModelTouchControls.SkinUiState.Active) {
+                    val activeSkin = skinState.skin
+                    val assetLoader = remember { DeltaSkinAssetLoader(localContext.cacheDir) }
+                    DeltaSkinOverlay(
+                        skinDir = activeSkin.directory,
+                        representation = activeSkin.representation,
+                        isLandscape = activeSkin.isLandscape,
+                        assetLoader = assetLoader,
+                        onGameScreenRect = { rect -> viewportPosition.value = rect },
+                        onButton = { keyCodes, pressed -> viewModel.sendSkinButton(keyCodes, pressed) },
+                        onMenu = { pressed -> viewModel.sendSkinMenu(pressed) },
+                        onMotion = { source, x, y -> viewModel.sendSkinMotion(source, x, y) },
+                    )
+
+                    val hasMenuItem =
+                        remember(activeSkin.representation) {
+                            activeSkin.representation.items.any {
+                                DeltaSkinInputMapping.classify(it) is DeltaSkinInputMapping.Control.Menu
+                            }
+                        }
+                    if (!hasMenuItem) {
+                        SkinFallbackMenuButton(onMenu = { pressed -> viewModel.sendSkinMenu(pressed) })
+                    }
+                }
+                // SkinUiState.Loading renders nothing so the default controls stay hidden.
+                return@PadKit
             }
 
             ConstraintLayout(
@@ -218,6 +266,33 @@ fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
             ) {
                 CircularProgressIndicator()
             }
+        }
+    }
+}
+
+@Composable
+private fun SkinFallbackMenuButton(onMenu: (Boolean) -> Unit) {
+    // Shown only when the active skin has no `menu` item, so the in-game menu stays reachable.
+    Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier =
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Top))
+                    .padding(top = 8.dp)
+                    .size(40.dp)
+                    .alpha(0.4f)
+                    .pointerInput(Unit) {
+                        awaitEachGesture {
+                            awaitFirstDown(requireUnconsumed = false)
+                            onMenu(true)
+                            waitForUpOrCancellation()
+                            onMenu(false)
+                        }
+                    },
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")
         }
     }
 }

@@ -55,6 +55,8 @@ import com.swordfish.lemuroid.lib.library.db.RetrogradeDatabase
 import com.swordfish.lemuroid.lib.library.db.dao.GameSearchDao
 import com.swordfish.lemuroid.lib.library.db.dao.Migrations
 import com.swordfish.lemuroid.lib.library.metadata.GameMetadataProvider
+import com.swordfish.lemuroid.lib.library.skin.ControllerSkinPreferences
+import com.swordfish.lemuroid.lib.library.skin.DeltaSkinManager
 import com.swordfish.lemuroid.lib.migration.DesmumeMigrationHandler
 import com.swordfish.lemuroid.lib.preferences.SharedPreferencesHelper
 import com.swordfish.lemuroid.lib.saves.SavesCoherencyEngine
@@ -223,6 +225,20 @@ abstract class LemuroidApplicationModule {
         @PerApp
         @JvmStatic
         fun directoriesManager(context: Context) = DirectoriesManager(context)
+
+        @Provides
+        @PerApp
+        @JvmStatic
+        fun deltaSkinManager(
+            context: Context,
+            directoriesManager: DirectoriesManager,
+        ) = DeltaSkinManager(context, directoriesManager)
+
+        @Provides
+        @PerApp
+        @JvmStatic
+        fun controllerSkinPreferences(sharedPreferences: SharedPreferences) =
+            ControllerSkinPreferences(sharedPreferences)
 
         @Provides
         @PerApp
