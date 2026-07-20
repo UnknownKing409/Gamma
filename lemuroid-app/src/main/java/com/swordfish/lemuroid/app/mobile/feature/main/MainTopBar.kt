@@ -20,14 +20,15 @@ import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -42,6 +43,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.swordfish.lemuroid.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainTopBar(
     currentRoute: MainRoute,
@@ -49,6 +51,7 @@ fun MainTopBar(
     onUpdateQueryString: (String) -> Unit,
     onSetSearchActive: (Boolean) -> Unit,
     mainUIState: MainViewModel.UiState,
+    scrollBehavior: TopAppBarScrollBehavior,
     titleOverride: String? = null,
 ) {
     Column {
@@ -57,6 +60,7 @@ fun MainTopBar(
             titleOverride = titleOverride,
             navController = navController,
             mainUIState = mainUIState,
+            scrollBehavior = scrollBehavior,
             onUpdateQueryString = onUpdateQueryString,
             onSetSearchActive = onSetSearchActive,
         )
@@ -73,13 +77,15 @@ fun LemuroidTopAppBar(
     route: MainRoute,
     navController: NavController,
     mainUIState: MainViewModel.UiState,
+    scrollBehavior: TopAppBarScrollBehavior,
     onUpdateQueryString: (String) -> Unit,
     onSetSearchActive: (Boolean) -> Unit,
     titleOverride: String? = null,
 ) {
     val topBarColor = BottomAppBarDefaults.containerColor
 
-    TopAppBar(
+    LargeTopAppBar(
+        scrollBehavior = scrollBehavior,
         title = {
             if (mainUIState.displaySearch) {
                 LemuroidSearchView(
