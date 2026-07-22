@@ -180,6 +180,7 @@ fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
                         onButton = { keyCodes, pressed -> viewModel.sendSkinButton(keyCodes, pressed) },
                         onMenu = { pressed -> viewModel.sendSkinMenu(pressed) },
                         onMotion = { source, x, y -> viewModel.sendSkinMotion(source, x, y) },
+                        hapticFeedbackType = padHapticFeedback,
                     )
 
                     val hasMenuItem =
@@ -285,9 +286,10 @@ private fun SkinFallbackMenuButton(onMenu: (Boolean) -> Unit) {
                     .pointerInput(Unit) {
                         awaitEachGesture {
                             awaitFirstDown(requireUnconsumed = false)
-                            onMenu(true)
-                            waitForUpOrCancellation()
-                            onMenu(false)
+                            // Fire on touch up (not down) to avoid opening the menu by accident.
+                            if (waitForUpOrCancellation() != null) {
+                                onMenu(true)
+                            }
                         }
                     },
             contentAlignment = Alignment.Center,
