@@ -1,8 +1,13 @@
 package com.swordfish.lemuroid.app.mobile.feature.main
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,6 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.swordfish.lemuroid.R
+
+private const val TITLE_ANIM_DURATION = 350
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,16 +91,29 @@ fun LemuroidTopAppBar(
 ) {
     val topBarColor = BottomAppBarDefaults.containerColor
 
+    val titleText = titleOverride ?: stringResource(route.titleId)
+
     LargeTopAppBar(
         scrollBehavior = scrollBehavior,
         title = {
-            if (mainUIState.displaySearch) {
-                LemuroidSearchView(
-                    mainUIState = mainUIState,
-                    onUpdateQueryString = onUpdateQueryString,
-                )
-            } else {
-                Text(text = titleOverride ?: stringResource(route.titleId))
+            // The top bar lives outside the NavHost, so its title slot swaps content on route
+            // changes without the nav slide. AnimatedContent gives that swap a fade + slide.
+            AnimatedContent(
+                targetState = mainUIState.displaySearch to titleText,
+                transitionSpec = {
+                    fadeIn(tween(TITLE_ANIM_DURATION))
+                        .togetherWith(fadeOut(tween(TITLE_ANIM_DURATION)))
+                },
+                label = "topBarTitle",
+            ) { (displaySearch, title) ->
+                if (displaySearch) {
+                    LemuroidSearchView(
+                        mainUIState = mainUIState,
+                        onUpdateQueryString = onUpdateQueryString,
+                    )
+                } else {
+                    Text(text = title)
+                }
             }
         },
         colors =
@@ -104,8 +124,10 @@ fun LemuroidTopAppBar(
         navigationIcon = {
             AnimatedVisibility(
                 visible = mainUIState.displaySearch || route.parent != null,
-                enter = fadeIn(),
-                exit = fadeOut(),
+                // Animate the icon's occupied width too, so the title slides to follow it
+                // instead of jumping when the slot appears/disappears.
+                enter = fadeIn(tween(TITLE_ANIM_DURATION)) + expandHorizontally(tween(TITLE_ANIM_DURATION)),
+                exit = fadeOut(tween(TITLE_ANIM_DURATION)) + shrinkHorizontally(tween(TITLE_ANIM_DURATION)),
             ) {
                 IconButton(
                     onClick = {
