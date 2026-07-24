@@ -30,12 +30,7 @@ enum class MetaSystemID(
     GB(
         R.string.game_system_title_gb,
         R.drawable.game_system_gb,
-        listOf(SystemID.GB),
-    ),
-    GBC(
-        R.string.game_system_title_gbc,
-        R.drawable.game_system_gbc,
-        listOf(SystemID.GBC),
+        listOf(SystemID.GB, SystemID.GBC),
     ),
     GBA(
         R.string.game_system_title_gba,
@@ -128,7 +123,7 @@ enum class MetaSystemID(
                 SystemID.MAME2003PLUS -> ARCADE
                 SystemID.ATARI2600 -> ATARI2600
                 SystemID.GB -> GB
-                SystemID.GBC -> GBC
+                SystemID.GBC -> GB
                 SystemID.GBA -> GBA
                 SystemID.GENESIS -> GENESIS
                 SystemID.SEGACD -> GENESIS
