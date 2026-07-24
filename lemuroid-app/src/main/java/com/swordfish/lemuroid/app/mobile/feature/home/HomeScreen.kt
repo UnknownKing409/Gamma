@@ -123,7 +123,6 @@ private sealed interface GridEntry {
         val sectionId: String,
         val iconRes: Int?,
         val title: String,
-        val count: Int,
     ) : GridEntry {
         override val isFullSpan = true
         override val key = "header_$sectionId"
@@ -185,7 +184,7 @@ private fun HomeScreen(
                     when (section) {
                         is HomeViewModel.Section.Favorites -> {
                             val title = context.getString(R.string.favorites)
-                            entries += GridEntry.Header("favorites", null, title, section.games.size)
+                            entries += GridEntry.Header("favorites", null, title)
                             railSections += RailSection(headerIndex, title, null)
                             "favorites"
                         }
@@ -196,7 +195,6 @@ private fun HomeScreen(
                                     section.metaSystem.name,
                                     section.metaSystem.imageResId,
                                     title,
-                                    section.games.size,
                                 )
                             railSections += RailSection(headerIndex, title, section.metaSystem.imageResId)
                             section.metaSystem.name
@@ -251,7 +249,6 @@ private fun HomeScreen(
                         SectionHeader(
                             iconRes = entry.iconRes,
                             title = entry.title,
-                            count = entry.count,
                         )
                     is GridEntry.GameCell ->
                         LemuroidGameCard(
@@ -293,7 +290,6 @@ private fun HomeScreen(
 private fun SectionHeader(
     iconRes: Int?,
     title: String,
-    count: Int,
 ) {
     Row(
         modifier =
@@ -305,13 +301,13 @@ private fun SectionHeader(
     ) {
         if (iconRes != null) {
             Image(
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(32.dp),
                 painter = painterResource(id = iconRes),
                 contentDescription = null,
             )
         } else {
             Icon(
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(28.dp),
                 imageVector = Icons.Filled.Star,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
@@ -320,11 +316,6 @@ private fun SectionHeader(
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
-        )
-        Text(
-            text = count.toString(),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -390,7 +381,7 @@ private fun RailIcon(
         } else {
             MaterialTheme.colorScheme.onSurfaceVariant
         }
-    val iconSize = if (active) 24.dp else 18.dp
+    val iconSize = if (active) 26.dp else 20.dp
 
     if (railSection.systemImageRes != null) {
         Image(
@@ -421,19 +412,19 @@ private fun RailSelectionBubble(
         shadowElevation = 8.dp,
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (railSection.systemImageRes != null) {
                 Image(
-                    modifier = Modifier.size(32.dp),
+                    modifier = Modifier.size(42.dp),
                     painter = painterResource(id = railSection.systemImageRes),
                     contentDescription = null,
                 )
             } else {
                 Icon(
-                    modifier = Modifier.size(32.dp),
+                    modifier = Modifier.size(36.dp),
                     imageVector = Icons.Filled.Star,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
