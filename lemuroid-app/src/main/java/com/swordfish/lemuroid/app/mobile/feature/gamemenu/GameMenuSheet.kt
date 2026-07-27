@@ -60,8 +60,14 @@ private const val STEADY_FRAME_NANOS = 32_000_000L
 /** Upper bound on the wait, so a device that never reaches cadence still opens the menu. */
 private const val MAX_WARMUP_NANOS = 500_000_000L
 
-/** How dark the game behind the sheet gets, matching the dim this theme used to ask the window for. */
-private const val SCRIM_ALPHA = 0.75f
+/** How dark the game behind the sheet gets when it cannot be blurred. */
+private const val DIM_SCRIM_ALPHA = 0.75f
+
+/**
+ * How dark the game gets when it is blurred as well. The blur alone is not enough separation from a
+ * bright game, but it does most of the work, so this only has to knock the brightness back.
+ */
+private const val BLUR_SCRIM_ALPHA = 0.3f
 
 @Stable
 class GameMenuSheetState {
@@ -130,6 +136,10 @@ private suspend fun awaitSteadyFrames() {
  * which the animation can be cleared in time. Drawing in the activity's own window instead leaves
  * the slide as the only motion.
  *
+ * The game behind is blurred where the platform supports it, with a light scrim over the blur for
+ * contrast, and falls back to a plain dim everywhere else. Both follow the same animation, so the
+ * background settles as the sheet arrives.
+ *
  * The scrim is drawn here rather than asked for with the window's backgroundDim, because the
  * activity opens with no transition at all: a window animation is the only thing that would fade
  * the dim in, and it fades the sheet along with it. Fading a scrim of our own keeps the dim
@@ -145,6 +155,11 @@ fun GameMenuSheet(
 ) {
     val coroutineScope = rememberCoroutineScope()
 
+    val backgroundBlurred = rememberBackgroundBlurEnabled()
+    if (backgroundBlurred) {
+        BackgroundBlur { state.scrimAlpha.value }
+    }
+
     // The sheet is content sized, so its travel is only known once it has been measured. It is
     // parked off screen until then and slides up from there. This must not be keyed on the height:
     // window insets land a few frames in and resize the sheet, which would cancel the animation
@@ -157,13 +172,15 @@ fun GameMenuSheet(
         state.enter()
     }
 
+    val scrimAlpha = if (backgroundBlurred) BLUR_SCRIM_ALPHA else DIM_SCRIM_ALPHA
+
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
         Box(
             modifier =
                 Modifier
                     .fillMaxSize()
                     .graphicsLayer { alpha = state.scrimAlpha.value }
-                    .background(Color.Black.copy(alpha = SCRIM_ALPHA))
+                    .background(Color.Black.copy(alpha = scrimAlpha))
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
