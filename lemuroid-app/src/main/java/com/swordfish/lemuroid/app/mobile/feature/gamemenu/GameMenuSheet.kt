@@ -4,6 +4,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
@@ -33,11 +34,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.Dp
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -50,20 +54,42 @@ private const val DRAG_DISMISS_FRACTION = 0.4f
 /** Downwards fling speed, in pixels per second, that dismisses regardless of how far it moved. */
 private const val DRAG_DISMISS_VELOCITY = 1000f
 
+/** A frame gap under this is taken as the pipeline keeping up, so animations will look smooth. */
+private const val STEADY_FRAME_NANOS = 32_000_000L
+
+/** Upper bound on the wait, so a device that never reaches cadence still opens the menu. */
+private const val MAX_WARMUP_NANOS = 500_000_000L
+
+/** How dark the game behind the sheet gets, matching the dim this theme used to ask the window for. */
+private const val SCRIM_ALPHA = 0.75f
+
 @Stable
 class GameMenuSheetState {
     /** How far the sheet currently sits below its resting position, in pixels. */
     internal val offset = Animatable(0f)
+
+    /** The scrim fades on its own so that the sheet itself can slide without any cross fade. */
+    internal val scrimAlpha = Animatable(0f)
 
     internal var heightPx by mutableFloatStateOf(0f)
 
     internal var hasEntered by mutableStateOf(false)
 
     /** Slides the sheet back down below the bottom edge and suspends until it is gone. */
-    suspend fun hide() {
-        if (heightPx <= 0f) return
-        offset.animateTo(heightPx, EXIT_ANIMATION)
-    }
+    suspend fun hide() =
+        coroutineScope {
+            launch { scrimAlpha.animateTo(0f, EXIT_ANIMATION) }
+            if (heightPx > 0f) {
+                offset.animateTo(heightPx, EXIT_ANIMATION)
+            }
+        }
+
+    /** Fades the scrim up while the sheet slides in, and suspends until both have finished. */
+    internal suspend fun enter() =
+        coroutineScope {
+            launch { scrimAlpha.animateTo(1f, ENTER_ANIMATION) }
+            settle()
+        }
 
     internal suspend fun settle() {
         offset.animateTo(0f, ENTER_ANIMATION)
@@ -74,14 +100,40 @@ class GameMenuSheetState {
 fun rememberGameMenuSheetState(): GameMenuSheetState = remember { GameMenuSheetState() }
 
 /**
+ * Suspends until frames are arriving at a steady cadence, or until the wait has gone on long
+ * enough that it is not worth holding the menu back any further.
+ *
+ * The first time the menu opens, the process still has to load this activity, spin up Compose for
+ * its window and lay out the whole sheet, which can stall the main thread for a few hundred
+ * milliseconds. Animations advance against wall clock frame times, so starting the slide during
+ * that stall spends the entire tween inside one dropped frame and the sheet simply appears at its
+ * resting position. Later openings find everything warm, which is why only the first one looks
+ * wrong. Waiting for the pipeline to catch up costs nothing visually, because the sheet is parked
+ * off screen until the slide begins.
+ */
+private suspend fun awaitSteadyFrames() {
+    val start = withFrameNanos { it }
+    var previous = start
+    while (true) {
+        val current = withFrameNanos { it }
+        if (current - previous < STEADY_FRAME_NANOS || current - start > MAX_WARMUP_NANOS) return
+        previous = current
+    }
+}
+
+/**
  * A bottom sheet that slides in and out with no cross fade.
  *
  * Material's ModalBottomSheet renders into its own dialog window, and Material themes that window
  * with the platform dialog animation. The window fades in while the sheet slides up, and because
  * the dialog is shown from a DisposableEffect before any content composes there is no point at
  * which the animation can be cleared in time. Drawing in the activity's own window instead leaves
- * the slide as the only motion. The activity theme dims the game behind it, so no scrim is drawn
- * here, but taps outside the sheet still dismiss it.
+ * the slide as the only motion.
+ *
+ * The scrim is drawn here rather than asked for with the window's backgroundDim, because the
+ * activity opens with no transition at all: a window animation is the only thing that would fade
+ * the dim in, and it fades the sheet along with it. Fading a scrim of our own keeps the dim
+ * gradual while the sheet does nothing but slide. Taps on it dismiss the menu.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -99,9 +151,10 @@ fun GameMenuSheet(
     // partway and leave the sheet stranded off screen.
     LaunchedEffect(Unit) {
         snapshotFlow { state.heightPx }.first { it > 0f }
+        awaitSteadyFrames()
         state.offset.snapTo(state.heightPx)
         state.hasEntered = true
-        state.settle()
+        state.enter()
     }
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
@@ -109,6 +162,8 @@ fun GameMenuSheet(
             modifier =
                 Modifier
                     .fillMaxSize()
+                    .graphicsLayer { alpha = state.scrimAlpha.value }
+                    .background(Color.Black.copy(alpha = SCRIM_ALPHA))
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,

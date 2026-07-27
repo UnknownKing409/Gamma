@@ -222,10 +222,20 @@ abstract class BaseGameActivity : ImmersiveActivity() {
                 )
             }
         startActivityForResult(intent, DIALOG_REQUEST)
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        applyGameMenuOpenTransition()
     }
 
     protected abstract fun getDialogClass(): Class<out Activity>
+
+    /**
+     * Runs right after the game menu is started, while its transition is still pending. A pending
+     * transition set here beats anything the menu's own theme asks for, so a menu that animates
+     * its own content has to opt out of the window animation from this side.
+     */
+    protected open fun applyGameMenuOpenTransition() {
+        @Suppress("DEPRECATION")
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+    }
 
     private fun getCoreOptions(): List<CoreOption> =
         baseGameScreenViewModel.retroGameView.retroGameView

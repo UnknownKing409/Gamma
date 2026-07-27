@@ -46,11 +46,19 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
-    <!-- The game menu's motion is the bottom sheet sliding in and out, so its windows must not
-         animate on their own: any window animation cross-fades the sheet as it slides. -->
+    <!--
+        The game menu's motion is the bottom sheet sliding in and out, so its windows must not
+        animate on their own: any window animation cross-fades the sheet as it slides. The
+        activity* items are the ones that matter for the menu, since the platform only reads
+        windowEnter/ExitAnimation for non-activity windows such as dialogs and popups.
+    -->
     <style name="LemuroidNoWindowAnimation">
         <item name="android:windowEnterAnimation">@null</item>
         <item name="android:windowExitAnimation">@null</item>
+        <item name="android:activityOpenEnterAnimation">@null</item>
+        <item name="android:activityOpenExitAnimation">@null</item>
+        <item name="android:activityCloseEnterAnimation">@null</item>
+        <item name="android:activityCloseExitAnimation">@null</item>
     </style>
 
     <!--
@@ -62,8 +70,10 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:backgroundDimEnabled">true</item>
-        <item name="android:backgroundDimAmount">0.75</item>
+        <!-- The sheet fades its own scrim. The window dim would snap straight to full strength
+             here, because the window animation that would otherwise ease it in is the same one
+             that cross-fades the sheet. -->
+        <item name="android:backgroundDimEnabled">false</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowAnimationStyle">@style/LemuroidNoWindowAnimation</item>
     </style>

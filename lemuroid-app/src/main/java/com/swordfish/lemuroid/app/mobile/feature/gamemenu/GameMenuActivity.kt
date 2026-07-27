@@ -1,7 +1,9 @@
 package com.swordfish.lemuroid.app.mobile.feature.gamemenu
 
+import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
@@ -97,6 +99,8 @@ class GameMenuActivity : RetrogradeComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        disableActivityTransitions()
 
         enableEdgeToEdge(
             SystemBarStyle.dark(Color.TRANSPARENT),
@@ -325,6 +329,29 @@ class GameMenuActivity : RetrogradeComponentActivity() {
                     maxLines = 1,
                 )
             }
+        }
+    }
+
+    /**
+     * The theme clears the activity animations too, but skins vary in how well they honour that,
+     * and any surviving fade would cross fade the sheet as it slides. The menu's only motion is
+     * the sheet sliding and its own scrim fading, both drawn inside this window.
+     */
+    private fun disableActivityTransitions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overrideActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN, 0, 0)
+            overrideActivityTransition(Activity.OVERRIDE_TRANSITION_CLOSE, 0, 0)
+        } else {
+            @Suppress("DEPRECATION")
+            overridePendingTransition(0, 0)
+        }
+    }
+
+    override fun finish() {
+        super.finish()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            @Suppress("DEPRECATION")
+            overridePendingTransition(0, 0)
         }
     }
 
