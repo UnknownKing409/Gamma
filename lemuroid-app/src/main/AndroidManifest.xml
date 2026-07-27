@@ -79,8 +79,18 @@
             android:foregroundServiceType="dataSync"
             tools:node="merge" />
 
+        <!--
+            The menu absorbs the same configuration changes as the game it is drawn over, rather
+            than being recreated for them. Its window carries the blur over the game, and rotating
+            leaves the game's surface stale and offset until it resumes, so tearing the window down
+            drops the blur at the one moment it is most needed. Keeping it also spares the sheet
+            from replaying its entrance animation and losing the screen the menu was on.
+            Everything laid out here reads the configuration through Compose, which is handed the
+            new one directly, so the menu re-lays out without the activity restarting.
+        -->
         <activity
             android:name="com.swordfish.lemuroid.app.mobile.feature.gamemenu.GameMenuActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|mnc|colorMode|density|fontScale|fontWeightAdjustment|keyboard|layoutDirection|locale|mcc|navigation|smallestScreenSize|touchscreen|uiMode"
             android:process=":game"
             android:theme="@style/LemuroidMaterialTheme.Menu" />
 

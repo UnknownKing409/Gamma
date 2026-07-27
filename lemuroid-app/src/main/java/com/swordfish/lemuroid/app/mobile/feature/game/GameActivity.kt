@@ -12,4 +12,13 @@ class GameActivity : BaseGameActivity() {
     }
 
     override fun getDialogClass() = GameMenuActivity::class.java
+
+    /**
+     * The menu draws its own entrance: the sheet slides up and its scrim fades. A window fade on
+     * top of that would cross fade the sheet while it slides, so this window stays still.
+     */
+    override fun applyGameMenuOpenTransition() {
+        @Suppress("DEPRECATION")
+        overridePendingTransition(0, 0)
+    }
 }
