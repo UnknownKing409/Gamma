@@ -78,6 +78,7 @@ fun HomeScreen(
             Lifecycle.Event.ON_RESUME -> {
                 viewModel.updatePermissions(applicationContext)
             }
+
             else -> { }
         }
     }
@@ -188,6 +189,7 @@ private fun HomeScreen(
                             railSections += RailSection(headerIndex, title, null)
                             "favorites"
                         }
+
                         is HomeViewModel.Section.System -> {
                             val title = context.getString(section.metaSystem.titleResId)
                             entries +=
@@ -237,7 +239,7 @@ private fun HomeScreen(
                 },
             ) { index ->
                 when (val entry = entries[index]) {
-                    is GridEntry.Notification ->
+                    is GridEntry.Notification -> {
                         HomeNotificationCard(
                             notification = entry.notification,
                             indexInProgress = state.indexInProgress,
@@ -245,18 +247,23 @@ private fun HomeScreen(
                             onSetDirectoryClicked = onSetDirectoryClicked,
                             onOpenCoreSelection = onOpenCoreSelection,
                         )
-                    is GridEntry.Header ->
+                    }
+
+                    is GridEntry.Header -> {
                         SectionHeader(
                             iconRes = entry.iconRes,
                             title = entry.title,
                         )
-                    is GridEntry.GameCell ->
+                    }
+
+                    is GridEntry.GameCell -> {
                         LemuroidGameCard(
                             modifier = Modifier.animateItem(),
                             game = entry.game,
                             onClick = { onGameClicked(entry.game) },
                             onLongClick = { onGameLongClick(entry.game) },
                         )
+                    }
                 }
             }
         }
@@ -450,7 +457,7 @@ private fun HomeNotificationCard(
     onOpenCoreSelection: () -> Unit,
 ) {
     when (notification) {
-        HomeNotificationType.NO_GAMES ->
+        HomeNotificationType.NO_GAMES -> {
             HomeNotification(
                 titleId = R.string.home_empty_title,
                 messageId = R.string.home_empty_message,
@@ -458,20 +465,25 @@ private fun HomeNotificationCard(
                 onAction = onSetDirectoryClicked,
                 enabled = !indexInProgress,
             )
-        HomeNotificationType.MICROPHONE ->
+        }
+
+        HomeNotificationType.MICROPHONE -> {
             HomeNotification(
                 titleId = R.string.home_microphone_title,
                 messageId = R.string.home_microphone_message,
                 actionId = R.string.home_microphone_action,
                 onAction = onEnableMicrophoneClicked,
             )
-        HomeNotificationType.DESMUME ->
+        }
+
+        HomeNotificationType.DESMUME -> {
             HomeNotification(
                 titleId = R.string.home_notification_desmume_deprecated_title,
                 messageId = R.string.home_notification_desmume_deprecated_message,
                 actionId = R.string.home_notification_desmume_deprecated_action,
                 onAction = onOpenCoreSelection,
             )
+        }
     }
 }
 

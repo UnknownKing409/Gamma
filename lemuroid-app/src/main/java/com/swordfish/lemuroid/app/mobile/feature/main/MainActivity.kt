@@ -170,6 +170,7 @@ class MainActivity :
                         val systemId = navBackStackEntry.value?.arguments?.getString(ARG_SYSTEM_ID)
                         systemId?.let { stringResource(GameSystem.findById(it).shortTitleResId) }
                     }
+
                     MainRoute.SETTINGS_CONTROLLER_SKIN_ORIENTATION -> {
                         val orientation = navBackStackEntry.value?.arguments?.getString(ARG_ORIENTATION)
                         if (orientation == TouchControllerSettingsManager.Orientation.LANDSCAPE.name) {
@@ -178,7 +179,10 @@ class MainActivity :
                             stringResource(R.string.controller_skins_portrait)
                         }
                     }
-                    else -> null
+
+                    else -> {
+                        null
+                    }
                 }
 
             val selectedGameState =
@@ -245,19 +249,31 @@ class MainActivity :
                     // Settings pages slide in from the right (and out to the right on back).
                     // The pop transitions double as the seekable predictive-back animation.
                     enterTransition = {
-                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(NAV_ANIM_DURATION)) +
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Start,
+                            tween(NAV_ANIM_DURATION),
+                        ) +
                             fadeIn(tween(NAV_ANIM_DURATION))
                     },
                     exitTransition = {
-                        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(NAV_ANIM_DURATION)) +
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Start,
+                            tween(NAV_ANIM_DURATION),
+                        ) +
                             fadeOut(tween(NAV_ANIM_DURATION))
                     },
                     popEnterTransition = {
-                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(NAV_ANIM_DURATION)) +
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.End,
+                            tween(NAV_ANIM_DURATION),
+                        ) +
                             fadeIn(tween(NAV_ANIM_DURATION))
                     },
                     popExitTransition = {
-                        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(NAV_ANIM_DURATION)) +
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.End,
+                            tween(NAV_ANIM_DURATION),
+                        ) +
                             fadeOut(tween(NAV_ANIM_DURATION))
                     },
                 ) {

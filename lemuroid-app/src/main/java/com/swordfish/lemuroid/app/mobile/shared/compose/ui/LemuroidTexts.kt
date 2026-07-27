@@ -14,7 +14,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.swordfish.lemuroid.app.utils.games.GameUtils
-import com.swordfish.lemuroid.common.compose.textUnit
 import com.swordfish.lemuroid.lib.library.db.entity.Game
 
 @Composable

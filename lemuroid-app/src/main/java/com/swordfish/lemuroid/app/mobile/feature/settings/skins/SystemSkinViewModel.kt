@@ -126,7 +126,7 @@ class SystemSkinViewModel(
     fun deleteSkin(id: String) {
         viewModelScope.launch {
             systemID?.let { system ->
-                Orientation.values()
+                Orientation.entries
                     .filter { controllerSkinPreferences.getSelectedSkinId(system, it) == id }
                     .forEach { controllerSkinPreferences.setSelectedSkinId(system, it, null) }
             }

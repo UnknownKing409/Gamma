@@ -137,7 +137,12 @@ class DeltaSkinManager(
             var entry = zip.nextEntry
             while (entry != null) {
                 val name = entry.name
-                if (!entry.isDirectory && !name.startsWith(MACOSX_PREFIX) && !name.substringAfterLast('/').startsWith(".")) {
+                if (!entry.isDirectory &&
+                    !name.startsWith(
+                        MACOSX_PREFIX,
+                    ) &&
+                    !name.substringAfterLast('/').startsWith(".")
+                ) {
                     val outFile = File(targetDir, name)
                     // Guard against Zip Slip.
                     if (outFile.canonicalPath.startsWith(canonicalTarget)) {

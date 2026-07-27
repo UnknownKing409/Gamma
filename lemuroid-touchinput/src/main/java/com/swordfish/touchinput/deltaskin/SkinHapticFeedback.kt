@@ -19,7 +19,9 @@ import kotlinx.coroutines.newSingleThreadContext
  * (Delta) skins feel identical. PadKit's own haptic generator is `internal`, hence this parallel copy.
  */
 @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
-class SkinHapticFeedback(applicationContext: Context) {
+class SkinHapticFeedback(
+    applicationContext: Context,
+) {
     private val vibrator = buildVibrator(applicationContext)
     private val strongEffect = buildStrongVibrationEffect()
     private val weakEffect = buildWeakVibrationEffect()

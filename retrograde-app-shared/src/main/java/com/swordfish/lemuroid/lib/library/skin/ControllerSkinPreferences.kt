@@ -13,7 +13,9 @@ import kotlinx.coroutines.flow.callbackFlow
  * default (PadKit) controls are used. Backed by the multi-process shared preferences so a selection
  * made in the main process is visible in the emulator process.
  */
-class ControllerSkinPreferences(private val sharedPreferences: SharedPreferences) {
+class ControllerSkinPreferences(
+    private val sharedPreferences: SharedPreferences,
+) {
     fun getSelectedSkinId(
         systemID: SystemID,
         orientation: Orientation,
