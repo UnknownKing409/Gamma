@@ -26,7 +26,7 @@ enum class GameMenuRoute(
 ) {
     HOME(
         route = "home",
-        titleId = R.string.game_menu_title,
+        titleId = R.string.game_menu_paused,
         parent = null,
     ),
     SAVE(

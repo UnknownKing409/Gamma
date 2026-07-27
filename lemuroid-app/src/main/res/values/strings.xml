@@ -144,6 +144,8 @@
     <string name="game_menu_fast_forward">Fast-Forward</string>
     <string name="game_menu_change_disk_disk">Disk %1$s</string>
     <string name="game_menu_tilt_sensor">Tilt Sensor</string>
+    <string name="game_menu_paused">Paused</string>
+    <string name="game_menu_resume">Resume</string>
 
     <string name="game_loading_preparing_game">Preparing game…</string>
 
