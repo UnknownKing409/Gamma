@@ -65,6 +65,8 @@ class HomeViewModel(
     }
 
     data class UIState(
+        /** True until the first state is built, so the UI can avoid flashing an empty message. */
+        val isLoading: Boolean = true,
         val sections: List<Section> = emptyList(),
         val indexInProgress: Boolean = true,
         val showNoMicrophonePermissionCard: Boolean = false,
@@ -108,6 +110,7 @@ class HomeViewModel(
         showDesmumeWarning: Boolean,
     ): UIState =
         UIState(
+            isLoading = false,
             sections = buildSections(allGames, searchQuery),
             indexInProgress = indexInProgress,
             showNoMicrophonePermissionCard = showMicrophoneCard,

@@ -209,7 +209,11 @@ private fun HomeScreen(
         }
 
     if (entries.isEmpty()) {
-        LemuroidEmptyView(modifier = modifier)
+        // Stay blank until the first state has been built, so the empty message isn't shown
+        // for the brief moment before the library has been read.
+        if (!state.isLoading) {
+            LemuroidEmptyView(modifier = modifier)
+        }
         return
     }
 
