@@ -164,7 +164,7 @@ private fun HomeScreen(
 ) {
     val context = LocalContext.current
 
-    val (entries, railSections) =
+    val entries =
         remember(state) {
             val entries = mutableListOf<GridEntry>()
 
@@ -178,15 +178,12 @@ private fun HomeScreen(
                 entries += GridEntry.Notification(HomeNotificationType.DESMUME)
             }
 
-            val railSections = mutableListOf<RailSection>()
             state.sections.forEach { section ->
-                val headerIndex = entries.size
                 val sectionId =
                     when (section) {
                         is HomeViewModel.Section.Favorites -> {
                             val title = context.getString(R.string.favorites)
                             entries += GridEntry.Header("favorites", null, title)
-                            railSections += RailSection(headerIndex, title, null)
                             "favorites"
                         }
 
@@ -198,19 +195,16 @@ private fun HomeScreen(
                                     section.metaSystem.imageResId,
                                     title,
                                 )
-                            railSections += RailSection(headerIndex, title, section.metaSystem.imageResId)
                             section.metaSystem.name
                         }
                     }
                 section.games.forEach { entries += GridEntry.GameCell(sectionId, it) }
             }
 
-            entries to railSections
+            entries
         }
 
     if (entries.isEmpty()) {
-        // Stay blank until the first state has been built, so the empty message isn't shown
-        // for the brief moment before the library has been read.
         if (!state.isLoading) {
             LemuroidEmptyView(modifier = modifier)
         }
@@ -218,8 +212,6 @@ private fun HomeScreen(
     }
 
     val gridState = rememberLazyGridState()
-    val coroutineScope = rememberCoroutineScope()
-    var activeRailIndex by remember { mutableStateOf<Int?>(null) }
 
     Box(
         modifier =
@@ -231,7 +223,7 @@ private fun HomeScreen(
             modifier = Modifier.fillMaxSize(),
             state = gridState,
             columns = GridCells.Adaptive(96.dp),
-            contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 40.dp, bottom = 16.dp),
+            contentPadding = PaddingValues(16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -270,29 +262,6 @@ private fun HomeScreen(
                     }
                 }
             }
-        }
-
-        if (railSections.isNotEmpty()) {
-            SystemScrollRail(
-                modifier = Modifier.align(Alignment.CenterEnd),
-                railSections = railSections,
-                activeIndex = activeRailIndex,
-                onSelect = { index ->
-                    activeRailIndex = index
-                    coroutineScope.launch {
-                        gridState.scrollToItem(railSections[index].itemIndex)
-                    }
-                },
-                onRelease = { activeRailIndex = null },
-            )
-        }
-
-        val active = activeRailIndex
-        if (active != null) {
-            RailSelectionBubble(
-                modifier = Modifier.align(Alignment.Center),
-                railSection = railSections[active],
-            )
         }
     }
 }
@@ -339,12 +308,15 @@ private fun SystemScrollRail(
     onSelect: (Int) -> Unit,
     onRelease: () -> Unit,
 ) {
-    Column(
-        modifier =
-            modifier
-                .fillMaxHeight()
-                .width(32.dp)
-                .padding(vertical = 8.dp)
+    Box(
+        modifier = modifier
+            .fillMaxHeight()
+            .width(32.dp)
+            .padding(vertical = 16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier
                 .pointerInput(railSections.size) {
                     fun selectAt(y: Float) {
                         val height = size.height
@@ -372,11 +344,12 @@ private fun SystemScrollRail(
                         onRelease()
                     }
                 },
-        verticalArrangement = Arrangement.SpaceEvenly,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        railSections.forEachIndexed { index, railSection ->
-            RailIcon(railSection = railSection, active = index == activeIndex)
+            verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            railSections.forEachIndexed { index, railSection ->
+                RailIcon(railSection = railSection, active = index == activeIndex)
+            }
         }
     }
 }
